@@ -1,3 +1,4 @@
+COMOR
 # DEPLOYMENT.md — PrivateForm Deployment Guide
 
 > 💡 **Quick option:** If you prefer, there's an automated script in `scripts/deploy.sh` that handles most of the steps. See end of this guide.
