@@ -1,5 +1,5 @@
 # =============================================================================
-# PrivateForm - Dockerfile test
+# PrivateForm - Dockerfile
 # =============================================================================
 # Base image: Python 3.12 slim
 # Multi-stage build to optimize final image size
