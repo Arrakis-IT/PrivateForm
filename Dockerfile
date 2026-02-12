@@ -1,8 +1,8 @@
 # =============================================================================
 # PrivateForm - Dockerfile
 # =============================================================================
-# Imagen base: Python 3.12 slim
-# Multi-stage build para imagen final ligera
+# Base image: Python 3.12 slim
+# Multi-stage build to optimize final image size
 # =============================================================================
 
 # --- Stage 1: Install dependencies ---

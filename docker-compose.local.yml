@@ -1,7 +1,7 @@
 # =============================================================================
 # PrivateForm - Docker Compose LOCAL (desarrollo)
 # =============================================================================
-# Uso: docker compose -f docker-compose.local.yml up
+# Use: docker compose -f docker-compose.local.yml up
 # =============================================================================
 
 services:
