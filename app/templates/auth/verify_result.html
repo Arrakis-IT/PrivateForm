@@ -1,0 +1,56 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{% if success %}Vérification réussie{% else %}Vérification échouée{% endif %} — PrivateForm{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4">
+    <div class="w-full max-w-md text-center">
+
+        {% if success %}
+        <!-- =============== SUCCESS =============== -->
+        <div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <h1 class="text-xl font-bold text-gray-800 mb-2">
+            {% if context == "verification" %}Email vérifié{% else %}Mot de passe réinitialisé{% endif %}
+        </h1>
+        <p class="text-gray-500 text-sm mb-6">
+            {% if context == "verification" %}
+            Votre compte est activé. Vous pouvez vous connecter maintenant.
+            {% else %}
+            Votre mot de passe a été changé avec succès.
+            {% endif %}
+        </p>
+        <a href="/login" class="btn-primary inline-block px-8 py-2.5 rounded-lg font-semibold text-sm">Se connecter</a>
+
+        {% elif expired %}
+        <!-- =============== EXPIRED =============== -->
+        <div class="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <h1 class="text-xl font-bold text-gray-800 mb-2">Lien expiré</h1>
+        <p class="text-gray-500 text-sm mb-6">Ce lien a expiré après 24 heures. Veuillez en demander un nouveau.</p>
+        {% if context == "verification" %}
+        <a href="/login" class="btn-primary inline-block px-8 py-2.5 rounded-lg font-semibold text-sm">Retour à la connexion</a>
+        {% else %}
+        <a href="/forgot-password" class="btn-primary inline-block px-8 py-2.5 rounded-lg font-semibold text-sm">Demander un nouveau lien</a>
+        {% endif %}
+
+        {% else %}
+        <!-- =============== ERROR =============== -->
+        <div class="w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </div>
+        <h1 class="text-xl font-bold text-gray-800 mb-2">Lien invalide</h1>
+        <p class="text-gray-500 text-sm mb-6">Ce lien est invalide ou a déjà été utilisé.</p>
+        <a href="/login" class="btn-primary inline-block px-8 py-2.5 rounded-lg font-semibold text-sm">Retour à la connexion</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

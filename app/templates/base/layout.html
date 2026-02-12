@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}PrivateForm{% endblock %}</title>
+
+    <!-- No cache, no tracking -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Heroicons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================================================
+           PrivateForm — Custom Styles
+           ========================================================================= */
+
+        /* Gradiente principal: cyan → azul → purple */
+        .pf-gradient {
+            background: linear-gradient(135deg, #5FD4C4 0%, #4B8FDB 50%, #6B7FDB 100%);
+        }
+        .pf-gradient-text {
+            background: linear-gradient(135deg, #5FD4C4 0%, #4B8FDB 50%, #6B7FDB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Botones */
+        .btn-primary {
+            background: linear-gradient(135deg, #4B8FDB, #6B7FDB);
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-outline {
+            border: 2px solid #4B8FDB;
+            color: #4B8FDB;
+            background: transparent;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            background: #4B8FDB;
+            color: white;
+        }
+
+        /* Toggle switch */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; inset: 0;
+            background-color: #9CA3AF;
+            border-radius: 26px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .toggle-slider::before {
+            content: "";
+            position: absolute;
+            height: 20px; width: 20px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background-color: #4B8FDB; }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+        /* Status badges */
+        .badge-active {
+            background: #EFF6FF;
+            color: #2563EB;
+            border: 1px solid #BFDBFE;
+        }
+        .badge-inactive {
+            background: #F3F4F6;
+            color: #6B7280;
+            border: 1px solid #E5E7EB;
+        }
+
+        /* Toasts */
+        #toast-container {
+            position: fixed; top: 1rem; right: 1rem; z-index: 9999;
+            display: flex; flex-direction: column; gap: 0.5rem;
+            max-width: 360px; width: 100%;
+        }
+        .toast {
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            display: flex; align-items: flex-start; justify-content: space-between;
+            gap: 0.75rem;
+            animation: slideIn 0.25s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toast-success { background: #16A34A; }
+        .toast-error   { background: #DC2626; }
+        .toast-info    { background: #2563EB; }
+        .toast-close { cursor: pointer; opacity: 0.7; flex-shrink: 0; font-size: 1.1rem; }
+        .toast-close:hover { opacity: 1; }
+        @keyframes slideIn {
+            from { transform: translateX(110%); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Modal overlay */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 8000;
+            display: none;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.75rem;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        /* Character counter */
+        .char-counter { font-size: 0.75rem; color: #9CA3AF; text-align: right; }
+        .char-counter.at-limit { color: #DC2626; }
+
+        /* Spinner overlay */
+        .spinner-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255,255,255,0.85);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9000;
+            display: none;
+        }
+        .spinner-overlay.active { display: flex; }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid #E5E7EB;
+            border-top-color: #4B8FDB;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Password checklist */
+        .pw-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: #9CA3AF; }
+        .pw-check.ok { color: #16A34A; }
+        .pw-check svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+        /* Form input focus */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            ring: 2px;
+            border-color: #4B8FDB !important;
+            box-shadow: 0 0 0 3px rgba(75,143,219,0.2);
+        }
+
+        /* Scrollbar (webkit) */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #F3F4F6; }
+        ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+        /* Min-height body */
+        body { min-height: 100vh; display: flex; flex-direction: column; }
+        .page-content { flex: 1; }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 font-sans">
+
+<!-- =====================================================================
+     TOAST CONTAINER
+     ===================================================== -->
+<div id="toast-container"></div>
+
+<!-- =====================================================================
+     SESSION EXPIRY MODAL
+     ===================================================== -->
+<div class="modal-overlay" id="session-modal">
+    <div class="modal-content text-center">
+        <div class="text-4xl mb-3">⏰</div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Session expirée</h3>
+        <p class="text-gray-500 text-sm mb-5">Votre session a expiré après 2 heures d'inactivité. Veuillez vous reconnectez.</p>
+        <button onclick="window.location.href='/login'" class="btn-primary px-6 py-2 rounded-lg font-medium">
+            Se reconnectez
+        </button>
+    </div>
+</div>
+
+<!-- =====================================================================
+     UNSAVED CHANGES MODAL (used by form editor)
+     ===================================================== -->
+<div class="modal-overlay" id="unsaved-modal">
+    <div class="modal-content text-center">
+        <div class="text-4xl mb-3">⚠️</div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Modifications non sauvegardées</h3>
+        <p class="text-gray-500 text-sm mb-5">Vous avez des modifications non sauvegardées. Si vous quittez, elles seront perdues.</p>
+        <div class="flex justify-center gap-3">
+            <button onclick="closeUnsavedModal()" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Rester</button>
+            <button onclick="confirmNavigation()" class="btn-primary px-4 py-2 rounded-lg font-medium text-sm">Quitter</button>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     DELETE CONFIRM MODAL
+     ===================================================== -->
+<div class="modal-overlay" id="delete-modal">
+    <div class="modal-content text-center">
+        <div class="text-4xl mb-3">🗑️</div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Supprimer le formulaire</h3>
+        <p class="text-gray-500 text-sm mb-5">Cette action est irréversible. Le formulaire et toutes ses questions seront définitivement supprimés.</p>
+        <div class="flex justify-center gap-3">
+            <button onclick="closeDeleteModal()" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Annuler</button>
+            <button onclick="confirmDelete()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     SHARE MODAL
+     ===================================================== -->
+<div class="modal-overlay" id="share-modal">
+    <div class="modal-content text-center">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Partager le formulaire</h3>
+        <div id="share-qr" class="flex justify-center mb-4"></div>
+        <p id="share-url" class="text-sm text-gray-600 mb-4 break-all"></p>
+        <div class="flex justify-center gap-3">
+            <button onclick="copyShareUrl()" id="copy-btn" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Copier l'URL</button>
+            <button onclick="downloadQR()" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Télécharger le QR</button>
+        </div>
+        <button onclick="closeShareModal()" class="mt-4 text-gray-400 text-sm hover:text-gray-600">Fermer</button>
+    </div>
+</div>
+
+<!-- =====================================================================
+     SPINNER OVERLAY
+     ===================================================== -->
+<div class="spinner-overlay" id="spinner-overlay">
+    <div class="spinner"></div>
+    <p class="mt-3 text-gray-500 font-medium" id="spinner-text">Envoi en cours...</p>
+</div>
+
+<!-- =====================================================================
+     NAVIGATION (shown on authenticated pages)
+     ===================================================== -->
+{% block nav %}{% endblock %}
+
+<!-- =====================================================================
+     PAGE CONTENT
+     ===================================================== -->
+<div class="page-content">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- =====================================================================
+     FOOTER (public pages)
+     ===================================================== -->
+{% block footer %}{% endblock %}
+
+<!-- =====================================================================
+     SCRIPTS
+     ===================================================== -->
+<script>
+// ==========================================================================
+// Toast system
+// ==========================================================================
+function showToast(message, type = "success") {
+    const container = document.getElementById("toast-container");
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span>${message}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { if (toast.parentElement) toast.remove(); }, 3000);
+}
+
+// ==========================================================================
+// Unsaved changes modal helpers
+// ==========================================================================
+let pendingUrl = null;
+function closeUnsavedModal() {
+    document.getElementById("unsaved-modal").classList.remove("active");
+}
+function confirmNavigation() {
+    if (pendingUrl) window.location.href = pendingUrl;
+}
+function showUnsavedModal(url) {
+    pendingUrl = url;
+    document.getElementById("unsaved-modal").classList.add("active");
+}
+
+// ==========================================================================
+// Delete modal helpers
+// ==========================================================================
+let pendingDeleteId = null;
+function closeDeleteModal() {
+    document.getElementById("delete-modal").classList.remove("active");
+}
+function showDeleteModal(formId) {
+    pendingDeleteId = formId;
+    document.getElementById("delete-modal").classList.add("active");
+}
+async function confirmDelete() {
+    if (!pendingDeleteId) return;
+    closeDeleteModal();
+    try {
+        const res = await fetch(`/doctor/form/${pendingDeleteId}/delete`, { method: "POST" });
+        if (res.ok) {
+            showToast("Formulaire supprimé.", "success");
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showToast("Erreur lors de la suppression.", "error");
+        }
+    } catch(e) {
+        showToast("Erreur réseau.", "error");
+    }
+}
+
+// ==========================================================================
+// Share modal helpers
+// ==========================================================================
+let shareQRData = null;
+let shareFormName = "";
+function closeShareModal() {
+    document.getElementById("share-modal").classList.remove("active");
+}
+function showShareModal(url, qrBase64, formName) {
+    shareQRData = qrBase64;
+    shareFormName = formName;
+    document.getElementById("share-url").textContent = url;
+    document.getElementById("share-qr").innerHTML = `<img src="data:image/png;base64,${qrBase64}" alt="QR Code" style="width:300px;height:300px;">`;
+    document.getElementById("copy-btn").textContent = "Copier l'URL";
+    document.getElementById("share-modal").classList.add("active");
+}
+function copyShareUrl() {
+    const url = document.getElementById("share-url").textContent;
+    navigator.clipboard.writeText(url).then(() => {
+        document.getElementById("copy-btn").textContent = "Copié !";
+        setTimeout(() => { document.getElementById("copy-btn").textContent = "Copier l'URL"; }, 2000);
+    });
+}
+function downloadQR() {
+    if (!shareQRData) return;
+    const slug = shareFormName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
+    const link = document.createElement("a");
+    link.href = `data:image/png;base64,${shareQRData}`;
+    link.download = `privateform_qr_${slug}.png`;
+    link.click();
+}
+
+// ==========================================================================
+// Spinner helpers
+// ==========================================================================
+function showSpinner(text = "Envoi en cours...") {
+    document.getElementById("spinner-text").textContent = text;
+    document.getElementById("spinner-overlay").classList.add("active");
+}
+function hideSpinner() {
+    document.getElementById("spinner-overlay").classList.remove("active");
+}
+
+// ==========================================================================
+// Session check — polls every 30s to detect 401
+// ==========================================================================
+(function sessionGuard() {
+    {% if session_check %}
+    setInterval(async () => {
+        try {
+            const res = await fetch("/doctor/session-check", { credentials: "include" });
+            if (res.status === 401) {
+                document.getElementById("session-modal").classList.add("active");
+            }
+        } catch(e) {}
+    }, 30000);
+    {% endif %}
+})();
+</script>
+
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

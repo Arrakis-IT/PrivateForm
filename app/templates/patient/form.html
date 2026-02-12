@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ form.name }} — PrivateForm</title>
+
+    <!-- No cache, no cookies, no tracking -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    {% if hcaptcha_site_key and hcaptcha_site_key != 'your_hcaptcha_site_key_here' %}
+    <script src="https://hcaptcha.com/1/api.js"></script>
+    {% endif %}
+
+    <style>
+        .pf-gradient { background: linear-gradient(135deg, #5FD4C4 0%, #4B8FDB 50%, #6B7FDB 100%); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4B8FDB, #6B7FDB);
+            color: white; transition: opacity 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4B8FDB !important;
+            box-shadow: 0 0 0 3px rgba(75,143,219,0.2);
+        }
+
+        /* Spinner */
+        .spinner-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255,255,255,0.88);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9000;
+        }
+        .spinner-overlay.active { display: flex; }
+        .spinner { width:48px;height:48px;border:4px solid #E5E7EB;border-top-color:#4B8FDB;border-radius:50%;animation:spin 0.7s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* Scale buttons */
+        .scale-btn {
+            width:36px;height:36px;border-radius:50%;border:2px solid #E5E7EB;
+            background:white;cursor:pointer;font-size:14px;font-weight:600;color:#6B7280;
+            transition:all 0.15s;display:flex;align-items:center;justify-content:center;
+        }
+        .scale-btn:hover { border-color:#4B8FDB; color:#4B8FDB; }
+        .scale-btn.selected { background:#4B8FDB; border-color:#4B8FDB; color:white; }
+
+        /* Min 16px font (iOS zoom prevention) */
+        input, select, textarea { font-size: 16px !important; }
+
+        body { min-height:100vh; display:flex; flex-direction:column; }
+        .page-content { flex:1; width: 100% !important;}
+        
+        /* Forzar ancho completo en todos los elementos */
+        .question-block,
+        .answer-input,
+        input.answer-input,
+        select.answer-input,
+        textarea.answer-input {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<!-- Spinner -->
+<div class="spinner-overlay" id="spinner-overlay">
+    <div class="spinner"></div>
+    <p class="mt-3 text-gray-500 font-medium">Envoi en cours...</p>
+</div>
+
+<!-- =====================================================================
+     HEADER
+     ===================================================== -->
+<div class="pf-gradient py-5 px-4">
+    <div class="max-w-2xl mx-auto">
+        <p class="text-white text-opacity-80 text-sm mb-1">Dr {{ doctor.name }}</p>
+        <h1 class="text-white text-xl font-bold">{{ form.name }}</h1>
+    </div>
+</div>
+
+<!-- =====================================================================
+     PRIVACY NOTICE (bilingual FR/EN)
+     ===================================================== -->
+<div class="max-w-2xl mx-auto px-4 pt-4">
+    <div class="bg-gray-100 rounded-lg px-4 py-3 flex items-start gap-2">
+        <svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <div class="text-xs text-gray-500 leading-relaxed">
+            <p><strong>🇫🇷 FR</strong> Confidentialité totale : Ce formulaire n'utilise pas de cookies et ne stocke aucune donnée. Si vous fermez votre navigateur, votre progression sera perdue. Vos réponses seront envoyées de manière chiffrée à votre médecin et supprimées immédiatement de nos serveurs.</p>
+            <p class="mt-1"><strong>🇬🇧 EN</strong> Full privacy: This form uses no cookies and stores no data. If you close your browser, your progress will be lost. Your answers will be sent encrypted to your doctor and immediately deleted from our servers.</p>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     FORM
+     ===================================================== -->
+<div class="page-content max-w-2xl mx-auto px-4 py-6" id="form-container">
+
+    <!-- Success state (shown after submit) -->
+    <div id="success-state" class="hidden text-center py-12">
+        <div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-5">
+            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-800 mb-2">Formulaire envoyé avec succès</h2>
+        <p id="success-timestamp" class="text-sm text-gray-400 mb-6"></p>
+        <div class="flex justify-center">
+            <img src="/static/img/logo.png" alt="PrivateForm" class="h-8 opacity-50">
+        </div>
+    </div>
+
+    <!-- Questions (hidden after success) -->
+    <div id="questions-block" class="space-y-6 w-full">
+
+        <!-- General error banner -->
+        <div id="general-error" class="hidden bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3"></div>
+
+        {% for q in questions %}
+        <div class="question-block" data-id="{{ q.id }}" data-type="{{ q.question_type }}">
+
+            <!-- Label -->
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ q.text }}
+                {% if q.is_required %}<span class="text-red-500">*</span> <span class="text-xs font-normal text-red-400">Obligatoire</span>{% endif %}
+            </label>
+
+            <!-- Inline error -->
+            <div class="error-msg text-red-500 text-xs mb-1 hidden"></div>
+
+            <!-- ============ TEXT ============ -->
+            {% if q.question_type == 'text' %}
+            <input type="text" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+                   placeholder="Votre réponse">
+
+            <!-- ============ TEXT LONG ============ -->
+            {% elif q.question_type == 'text_long' %}
+            <textarea class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 resize-none"
+                      rows="4" maxlength="5000" placeholder="Votre réponse"></textarea>
+            <div class="text-right"><span class="text-xs text-gray-400 char-count">0/5000</span></div>
+
+            <!-- ============ YES/NO ============ -->
+            {% elif q.question_type == 'yes_no' %}
+            <div class="flex gap-3">
+                <button type="button" class="yn-btn yes-btn flex-1 border-2 border-gray-200 rounded-lg py-2.5 text-sm font-medium text-gray-600 hover:border-green-400 hover:text-green-600 transition-colors"
+                        onclick="selectYN(this, 'oui')">Oui</button>
+                <button type="button" class="yn-btn no-btn flex-1 border-2 border-gray-200 rounded-lg py-2.5 text-sm font-medium text-gray-600 hover:border-red-400 hover:text-red-600 transition-colors"
+                        onclick="selectYN(this, 'non')">Non</button>
+            </div>
+
+            <!-- ============ SELECT ============ -->
+            {% elif q.question_type == 'select' %}
+            <select class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:border-blue-500">
+                <option value="">— Choisir —</option>
+                {% for opt in q.options %}
+                <option value="{{ opt }}">{{ opt }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- ============ MULTISELECT ============ -->
+            {% elif q.question_type == 'multiselect' %}
+            <div class="space-y-2">
+                {% for opt in q.options %}
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="ms-checkbox w-4 h-4 text-blue-600 rounded" value="{{ opt }}">
+                    <span class="text-sm text-gray-700">{{ opt }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <!-- ============ DATE ============ -->
+            {% elif q.question_type == 'date' %}
+            <input type="date" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500">
+
+            <!-- ============ NUMBER ============ -->
+            {% elif q.question_type == 'number' %}
+            <input type="text" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+                   placeholder="{% if q.allow_decimals %}Ex : 3,5{% else %}Ex : 42{% endif %}"
+                   inputmode="{% if q.allow_decimals %}decimal{% else %}numeric{% endif %}">
+
+            <!-- ============ EMAIL ============ -->
+            {% elif q.question_type == 'email' %}
+            <input type="email" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+                   placeholder="votre@email.com">
+
+            <!-- ============ PHONE ============ -->
+            {% elif q.question_type == 'phone' %}
+            <input type="tel" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+                   placeholder="+352 ..." inputmode="tel">
+
+            <!-- ============ SCALE 1-10 ============ -->
+            {% elif q.question_type == 'scale' %}
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs text-gray-400">{{ q.scale_label_1 or '1' }}</span>
+                    <span class="text-xs text-gray-400">{{ q.scale_label_10 or '10' }}</span>
+                </div>
+                <div class="flex gap-1.5 flex-wrap justify-center">
+                    {% for i in range(1, 11) %}
+                    <button type="button" class="scale-btn" data-value="{{ i }}" onclick="selectScale(this)">{{ i }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- hCaptcha -->
+        {% if hcaptcha_site_key and hcaptcha_site_key != 'your_hcaptcha_site_key_here' %}
+        <div class="flex justify-center mt-2">
+            <div class="h-captcha" data-sitekey="{{ hcaptcha_site_key }}"></div>
+        </div>
+        {% endif %}
+
+        <!-- Submit button -->
+        <div class="pt-4">
+            <button type="button" id="submit-btn" onclick="submitForm()"
+                    class="btn-primary w-full py-3.5 rounded-xl font-semibold text-base">
+                Envoyer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     FOOTER
+     ===================================================== -->
+<footer class="bg-white border-t border-gray-100 py-4 px-4 mt-8">
+    <div class="max-w-2xl mx-auto flex flex-col items-center gap-2">
+        <div class="flex items-center gap-2">
+            <img src="/static/img/logo.png" alt="PrivateForm" class="h-5 opacity-60">
+            <span class="text-xs text-gray-400">Powered by <a href="https://arrakis.lu" target="_blank" class="underline hover:text-gray-600">Arrakis.lu</a></span>
+        </div>
+        <div class="flex gap-4">
+            <a href="/cgu" target="_blank" class="text-xs text-gray-400 hover:text-gray-600">CGU</a>
+            <a href="/confidentialite" target="_blank" class="text-xs text-gray-400 hover:text-gray-600">Confidentialité</a>
+        </div>
+    </div>
+</footer>
+
+<!-- =====================================================================
+     SCRIPTS
+     ===================================================== -->
+<script>
+// --------------------------------------------------------------------------
+// Yes/No toggle
+// --------------------------------------------------------------------------
+function selectYN(btn, value) {
+    const block = btn.closest(".question-block");
+    block.querySelectorAll(".yn-btn").forEach(b => {
+        b.classList.remove("border-green-400", "text-green-600", "border-red-400", "text-red-600", "bg-green-50", "bg-red-50");
+    });
+    if (value === "oui") {
+        btn.classList.add("border-green-400", "text-green-600", "bg-green-50");
+    } else {
+        btn.classList.add("border-red-400", "text-red-600", "bg-red-50");
+    }
+    btn.dataset.selected = "true";
+}
+
+// --------------------------------------------------------------------------
+// Scale toggle
+// --------------------------------------------------------------------------
+function selectScale(btn) {
+    const block = btn.closest(".question-block");
+    block.querySelectorAll(".scale-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+}
+
+// --------------------------------------------------------------------------
+// Char counter for text_long
+// --------------------------------------------------------------------------
+document.querySelectorAll(".question-block[data-type='text_long'] textarea").forEach(ta => {
+    ta.addEventListener("input", function() {
+        const counter = this.closest(".question-block").querySelector(".char-count");
+        if (counter) counter.textContent = `${this.value.length}/5000`;
+    });
+});
+
+// --------------------------------------------------------------------------
+// Collect answers from DOM
+// --------------------------------------------------------------------------
+function collectAnswers() {
+    const answers = {};
+    document.querySelectorAll(".question-block").forEach(block => {
+        const id   = block.dataset.id;
+        const type = block.dataset.type;
+        let value  = null;
+
+        switch(type) {
+            case "text":
+            case "text_long":
+            case "email":
+            case "phone":
+            case "number":
+                value = block.querySelector(".answer-input").value.trim();
+                break;
+
+            case "select":
+                value = block.querySelector(".answer-input").value;
+                break;
+
+            case "multiselect":
+                value = Array.from(block.querySelectorAll(".ms-checkbox:checked")).map(cb => cb.value);
+                break;
+
+            case "yes_no":
+                const selected = block.querySelector(".yn-btn[data-selected='true']");
+                if (selected) {
+                    value = selected.classList.contains("border-green-400") ? "oui" : "non";
+                }
+                break;
+
+            case "date":
+                value = block.querySelector(".answer-input").value;
+                break;
+
+            case "scale":
+                const scaleBtnSel = block.querySelector(".scale-btn.selected");
+                value = scaleBtnSel ? scaleBtnSel.dataset.value : null;
+                break;
+        }
+        answers[id] = value;
+    });
+    return answers;
+}
+
+// --------------------------------------------------------------------------
+// Submit
+// --------------------------------------------------------------------------
+async function submitForm() {
+    // Clear previous errors
+    document.querySelectorAll(".error-msg").forEach(e => { e.classList.add("hidden"); e.textContent = ""; });
+    document.getElementById("general-error").classList.add("hidden");
+
+    const answers = collectAnswers();
+
+    // Get hCaptcha token
+    let captchaToken = "";
+    if (window.hcaptcha) {
+        try { captchaToken = hcaptcha.getToken(); }
+        catch(e) { /* not yet solved */ }
+    }
+
+    const payload = { answers, hcaptcha_token: captchaToken };
+
+    // Show spinner
+    document.getElementById("spinner-overlay").classList.add("active");
+    document.getElementById("submit-btn").disabled = true;
+
+    try {
+        const res = await fetch(window.location.pathname + "/submit", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        document.getElementById("spinner-overlay").classList.remove("active");
+
+        if (res.ok && data.success) {
+            // Show success
+            document.getElementById("questions-block").classList.add("hidden");
+            document.getElementById("success-timestamp").textContent = `Envoyé le ${data.timestamp}`;
+            document.getElementById("success-state").classList.remove("hidden");
+        } else {
+            // Show errors
+            document.getElementById("submit-btn").disabled = false;
+
+            if (data.errors && Array.isArray(data.errors)) {
+                // Show general banner
+                document.getElementById("general-error").textContent = data.errors.join(" ");
+                document.getElementById("general-error").classList.remove("hidden");
+            } else if (data.error) {
+                document.getElementById("general-error").textContent = data.error;
+                document.getElementById("general-error").classList.remove("hidden");
+            }
+
+            // Reset hCaptcha if needed
+            if (window.hcaptcha) { try { hcaptcha.reset(); } catch(e){} }
+        }
+    } catch(e) {
+        document.getElementById("spinner-overlay").classList.remove("active");
+        document.getElementById("submit-btn").disabled = false;
+        document.getElementById("general-error").textContent = "Erreur d'envoi. Si le problème persiste, contactez votre médecin.";
+        document.getElementById("general-error").classList.remove("hidden");
+    }
+}
+</script>
+</body>
+</html>

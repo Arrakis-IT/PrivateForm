@@ -1,0 +1,47 @@
+# =============================================================================
+# PrivateForm - Docker Compose LOCAL (desarrollo)
+# =============================================================================
+# Uso: docker compose -f docker-compose.local.yml up
+# =============================================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: privateform_db_local
+    environment:
+      POSTGRES_DB: privateform_db
+      POSTGRES_USER: privateform_user
+      POSTGRES_PASSWORD: local_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U privateform_user -d privateform_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    container_name: privateform_app_local
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./migrations:/app/migrations
+    env_file:
+      - .env.local
+    depends_on:
+      db:
+        condition: service_healthy
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+volumes:
+  postgres_data_local:
+    driver: local

@@ -1,0 +1,271 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Mon profil — PrivateForm{% endblock %}
+
+{% block nav %}
+<nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="/home" class="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Retour
+            </a>
+            <span class="text-gray-200">|</span>
+            <a href="/home" class="flex items-center gap-1.5">
+                <img src="/static/img/logo.png" alt="PrivateForm" class="h-7">
+                <span class="font-semibold pf-gradient-text">PrivateForm</span>
+            </a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-content max-w-2xl mx-auto px-4 py-8 space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+            <span class="text-blue-600 font-bold text-xl">{{ doctor.first_name[0] }}{{ doctor.last_name[0] }}</span>
+        </div>
+        <div>
+            <h1 class="text-xl font-bold text-gray-800">Mon profil</h1>
+            <p class="text-sm text-gray-400">Inscrit le {{ created_at_formatted }}</p>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 1: Données personnelles
+         ================================================================ -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-base font-semibold text-gray-700 mb-4 pb-3 border-b border-gray-100">Données personnelles</h2>
+
+        <div class="space-y-4">
+            <!-- Nom + Prénom -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Nom</label>
+                    <input type="text" id="prof-last-name" value="{{ doctor.last_name }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Prénom</label>
+                    <input type="text" id="prof-first-name" value="{{ doctor.first_name }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                </div>
+            </div>
+
+            <!-- Email (read-only) -->
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">
+                    Email <span class="text-gray-400 font-normal">(non modifiable — contactez le support)</span>
+                </label>
+                <input type="text" value="{{ doctor.email }}" readonly
+                       class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed">
+            </div>
+
+            <!-- Spécialité -->
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Spécialité</label>
+                <select id="prof-specialty" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
+                    <option value="">— Choisir —</option>
+                    {% for spec in specialties %}
+                    <option value="{{ spec }}" {% if doctor.specialty == spec %}selected{% endif %}>{{ spec }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Téléphone -->
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Téléphone</label>
+                <input type="text" id="prof-phone" value="{{ doctor.phone }}" placeholder="+352 ..."
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+            </div>
+
+            <!-- Pays -->
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Pays / Région</label>
+                <select id="prof-country" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
+                    <option value="">— Choisir —</option>
+                    {% for country_name, _ in countries %}
+                    <option value="{{ country_name }}" {% if doctor.country == country_name %}selected{% endif %}>{{ country_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Newsletter -->
+            <div class="flex items-center gap-3">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="prof-newsletter" {% if doctor.newsletter %}checked{% endif %}>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="text-sm text-gray-600">Recevoir les informations sur PrivateForm</span>
+            </div>
+
+            <!-- Save button -->
+            <button onclick="saveProfile()" class="btn-primary w-full py-2.5 rounded-lg font-medium text-sm mt-2">
+                Mettre à jour le profil
+            </button>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 2: Mot de passe de connexion
+         ================================================================ -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-base font-semibold text-gray-700 mb-4 pb-3 border-b border-gray-100">Mot de passe de connexion</h2>
+
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Mot de passe actuel <span class="text-red-500">*</span></label>
+                <input type="password" id="pw-current"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Nouveau mot de passe <span class="text-red-500">*</span></label>
+                <input type="password" id="pw-new" oninput="checkNewPw()"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                <!-- Mini checklist -->
+                <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5">
+                    <span class="pw-check" id="pw-c-len"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/></svg> 8+ car.</span>
+                    <span class="pw-check" id="pw-c-up"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/></svg> Maj.</span>
+                    <span class="pw-check" id="pw-c-lo"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/></svg> Min.</span>
+                    <span class="pw-check" id="pw-c-num"><svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/></svg> Chiffre</span>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Confirmer nouveau mot de passe <span class="text-red-500">*</span></label>
+                <input type="password" id="pw-confirm"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+            </div>
+            <button onclick="changePassword()" class="btn-outline w-full py-2 rounded-lg font-medium text-sm">
+                Changer le mot de passe
+            </button>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 3: Mot de passe chiffrement PDF
+         ================================================================ -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-base font-semibold text-gray-700 mb-1 pb-0">Mot de passe chiffrement PDF</h2>
+        <p class="text-xs text-gray-400 mb-4">Ce mot de passe est utilisé pour chiffrer les PDFs envoyés à votre email.</p>
+
+        <div class="space-y-3">
+            <div class="relative">
+                <label class="block text-xs font-medium text-gray-500 mb-1">Nouveau mot de passe PDF <span class="text-red-500">*</span></label>
+                <input type="password" id="pdf-pw-new"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 pr-10">
+                <button onclick="toggleVisibility('pdf-pw-new')" class="absolute right-3 top-7 text-gray-400 hover:text-gray-600">
+                    <svg class="w-4 h-4" id="pdf-eye" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7s-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </button>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Confirmer mot de passe PDF <span class="text-red-500">*</span></label>
+                <input type="password" id="pdf-pw-confirm"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+            </div>
+            <button onclick="changePdfPassword()" class="btn-outline w-full py-2 rounded-lg font-medium text-sm">
+                Mettre à jour le mot de passe PDF
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// --------------------------------------------------------------------------
+// Save profile
+// --------------------------------------------------------------------------
+async function saveProfile() {
+    const payload = {
+        last_name:  document.getElementById("prof-last-name").value.trim(),
+        first_name: document.getElementById("prof-first-name").value.trim(),
+        specialty:  document.getElementById("prof-specialty").value,
+        phone:      document.getElementById("prof-phone").value.trim(),
+        country:    document.getElementById("prof-country").value,
+        newsletter: document.getElementById("prof-newsletter").checked,
+    };
+    try {
+        const res = await fetch("/doctor/profile/update", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        showToast(data.message || (res.ok ? "Profil mis à jour." : "Erreur."), res.ok ? "success" : "error");
+    } catch(e) { showToast("Erreur réseau.", "error"); }
+}
+
+// --------------------------------------------------------------------------
+// Change login password
+// --------------------------------------------------------------------------
+async function changePassword() {
+    const payload = {
+        current_password: document.getElementById("pw-current").value,
+        new_password:     document.getElementById("pw-new").value,
+        confirm_password: document.getElementById("pw-confirm").value,
+    };
+    try {
+        const res = await fetch("/doctor/profile/change-password", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast(data.message, "success");
+            if (data.logout) setTimeout(() => { window.location.href = "/login"; }, 2000);
+        } else {
+            showToast(data.error || "Erreur.", "error");
+        }
+    } catch(e) { showToast("Erreur réseau.", "error"); }
+}
+
+// --------------------------------------------------------------------------
+// Change PDF password
+// --------------------------------------------------------------------------
+async function changePdfPassword() {
+    const payload = {
+        new_pdf_password:     document.getElementById("pdf-pw-new").value,
+        confirm_pdf_password: document.getElementById("pdf-pw-confirm").value,
+    };
+    try {
+        const res = await fetch("/doctor/profile/change-pdf-password", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        showToast(data.message || (res.ok ? "Mis à jour." : "Erreur."), res.ok ? "success" : "error");
+        if (res.ok) {
+            document.getElementById("pdf-pw-new").value = "";
+            document.getElementById("pdf-pw-confirm").value = "";
+        }
+    } catch(e) { showToast("Erreur réseau.", "error"); }
+}
+
+// --------------------------------------------------------------------------
+// Password strength checklist
+// --------------------------------------------------------------------------
+function checkNewPw() {
+    const v = document.getElementById("pw-new").value;
+    document.getElementById("pw-c-len").classList.toggle("ok", v.length >= 8);
+    document.getElementById("pw-c-up").classList.toggle("ok",  /[A-Z]/.test(v));
+    document.getElementById("pw-c-lo").classList.toggle("ok",  /[a-z]/.test(v));
+    document.getElementById("pw-c-num").classList.toggle("ok", /[0-9]/.test(v));
+}
+
+// --------------------------------------------------------------------------
+// Toggle password visibility (PDF field)
+// --------------------------------------------------------------------------
+function toggleVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === "password" ? "text" : "password";
+}
+</script>
+{% endblock %}

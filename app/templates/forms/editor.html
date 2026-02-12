@@ -1,0 +1,513 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{% if is_new %}Nouveau formulaire{% else %}Éditer {{ form_name }}{% endif %} — PrivateForm{% endblock %}
+
+{% block nav %}
+<nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <!-- Back button with unsaved check -->
+            <button onclick="navigateBack()" class="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Retour
+            </button>
+            <span class="text-gray-200">|</span>
+            <a href="/doctor/home" class="flex items-center gap-1.5">
+                <img src="/static/img/logo.png" alt="PrivateForm" class="h-7">
+                <span class="font-semibold pf-gradient-text">PrivateForm</span>
+            </a>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="submitForm(false)" class="btn-outline px-4 py-1.5 rounded-lg font-medium text-sm">Enregistrer</button>
+            <button onclick="submitForm(true)" class="btn-primary px-4 py-1.5 rounded-lg font-medium text-sm">Enregistrer et retourner</button>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-content max-w-2xl mx-auto px-4 py-8" id="editor-container">
+
+    <!-- Form name (always visible) -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Nom du formulaire <span class="text-red-500">*</span></label>
+        <input type="text" id="form-name-input"
+               value="{{ form_name }}"
+               maxlength="100"
+               placeholder="Ex : Consultation initiale"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500"
+               oninput="markDirty()">
+        <div class="flex justify-between mt-1">
+            <span id="name-error" class="text-red-500 text-xs hidden">{{ errors.name or '' }}</span>
+            <span class="char-counter text-xs text-gray-400" id="name-counter">{{ form_name|length }}/100</span>
+        </div>
+        {% if errors.name %}
+        <script>document.getElementById("name-error").classList.remove("hidden");</script>
+        {% endif %}
+    </div>
+
+    <!-- Questions list -->
+    <div id="questions-list" class="space-y-4 mb-6">
+        {% for q in questions %}
+        <div class="question-card bg-white rounded-xl shadow-sm border border-gray-200 p-5"
+             data-index="{{ loop.index0 }}"
+             data-id="{{ q.id or '' }}"
+             data-type="{{ q.question_type }}"
+             data-required="{{ 'true' if q.is_required else 'false' }}">
+
+            <!-- Question header: number + controls -->
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Question {{ loop.index }}</span>
+                <div class="flex items-center gap-1">
+                    <button onclick="moveQuestion(this, -1)" class="text-gray-300 hover:text-blue-500 p-1" title="Monter">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                    </button>
+                    <button onclick="moveQuestion(this, 1)" class="text-gray-300 hover:text-blue-500 p-1" title="Descendre">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <button onclick="deleteQuestion(this)" class="text-gray-300 hover:text-red-500 p-1 ml-1" title="Supprimer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Question text -->
+            <div class="mb-3">
+                <textarea class="q-text w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
+                          rows="2" maxlength="500" placeholder="Texte de la question"
+                          oninput="markDirty(); updateCounter(this, 500)">{{ q.text }}</textarea>
+                <div class="flex justify-between mt-1">
+                    {% if question_errors[loop.index0] and 'text' in question_errors[loop.index0] %}
+                    <span class="text-red-500 text-xs">{{ question_errors[loop.index0].text }}</span>
+                    {% else %}
+                    <span></span>
+                    {% endif %}
+                    <span class="char-counter text-xs text-gray-400">{{ q.text|length }}/500</span>
+                </div>
+            </div>
+
+            <!-- Type selector + required toggle -->
+            <div class="flex items-center gap-4 mb-3">
+                <div class="flex-1">
+                    <label class="block text-xs text-gray-500 mb-1">Type de réponse</label>
+                    <select class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500"
+                            onchange="markDirty(); handleTypeChange(this)">
+                        <option value="text" {% if q.question_type == 'text' %}selected{% endif %}>Texte</option>
+                        <option value="text_long" {% if q.question_type == 'text_long' %}selected{% endif %}>Texte long</option>
+                        <option value="yes_no" {% if q.question_type == 'yes_no' %}selected{% endif %}>Oui / Non</option>
+                        <option value="select" {% if q.question_type == 'select' %}selected{% endif %}>Sélection unique</option>
+                        <option value="multiselect" {% if q.question_type == 'multiselect' %}selected{% endif %}>Sélection multiple</option>
+                        <option value="date" {% if q.question_type == 'date' %}selected{% endif %}>Date</option>
+                        <option value="number" {% if q.question_type == 'number' %}selected{% endif %}>Nombre</option>
+                        <option value="email" {% if q.question_type == 'email' %}selected{% endif %}>Email</option>
+                        <option value="phone" {% if q.question_type == 'phone' %}selected{% endif %}>Téléphone</option>
+                        <option value="scale" {% if q.question_type == 'scale' %}selected{% endif %}>Échelle 1–10</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs text-gray-500">Obligatoire</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="q-required" {% if q.is_required %}checked{% endif %} onchange="markDirty()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Conditional fields -->
+            <div class="q-options-block" style="{% if q.question_type not in ['select', 'multiselect'] %}display:none;{% endif %}">
+                <label class="block text-xs text-gray-500 mb-1">Options (une par ligne, min 2, max 10)</label>
+                <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
+                          rows="3" placeholder="Option 1&#10;Option 2&#10;Option 3"
+                          oninput="markDirty()">{% if q.options %}{{ q.options | join('\n') }}{% endif %}</textarea>
+                {% if question_errors[loop.index0] and 'options' in question_errors[loop.index0] %}
+                <p class="text-red-500 text-xs mt-1">{{ question_errors[loop.index0].options }}</p>
+                {% endif %}
+            </div>
+
+            <div class="q-number-block" style="{% if q.question_type != 'number' %}display:none;{% endif %}">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" class="q-decimals" {% if q.allow_decimals %}checked{% endif %} onchange="markDirty()">
+                    <span class="text-xs text-gray-500">Permettre les décimales</span>
+                </label>
+            </div>
+
+            <div class="q-scale-block" style="{% if q.question_type != 'scale' %}display:none;{% endif %}">
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-500 mb-1">Étiquette pour 1 <span class="text-red-500">*</span></label>
+                        <input type="text" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500"
+                               maxlength="30" value="{{ q.scale_label_1 or '' }}" oninput="markDirty()">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-500 mb-1">Étiquette pour 10 <span class="text-red-500">*</span></label>
+                        <input type="text" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500"
+                               maxlength="30" value="{{ q.scale_label_10 or '' }}" oninput="markDirty()">
+                    </div>
+                </div>
+                {% if question_errors[loop.index0] and 'scale' in question_errors[loop.index0] %}
+                <p class="text-red-500 text-xs mt-1">{{ question_errors[loop.index0].scale }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- General / question errors banner -->
+    {% if errors.general %}
+    <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3 mb-4">
+        {{ errors.general }}
+    </div>
+    {% endif %}
+
+    <!-- Add question panel -->
+    {% if questions|length < max_questions|int %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 border-dashed p-5">
+        <h3 class="text-sm font-semibold text-gray-600 mb-4">+ Ajouter une nouvelle question</h3>
+
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Question <span class="text-red-500">*</span></label>
+                <textarea id="new-q-text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
+                          rows="2" maxlength="500" placeholder="Texte de la question"
+                          oninput="updateCounter(this, 500)"></textarea>
+                <div class="flex justify-end mt-1">
+                    <span class="char-counter text-xs text-gray-400">0/500</span>
+                </div>
+            </div>
+
+            <div class="flex gap-4 flex-wrap">
+                <div class="flex-1" style="min-width:180px;">
+                    <label class="block text-xs text-gray-500 mb-1">Type de réponse</label>
+                    <select id="new-q-type" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500"
+                            onchange="showNewConditional()">
+                        <option value="text">Texte</option>
+                        <option value="text_long">Texte long</option>
+                        <option value="yes_no">Oui / Non</option>
+                        <option value="select">Sélection unique</option>
+                        <option value="multiselect">Sélection multiple</option>
+                        <option value="date">Date</option>
+                        <option value="number">Nombre</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Téléphone</option>
+                        <option value="scale">Échelle 1–10</option>
+                    </select>
+                </div>
+                <div class="flex items-end gap-2">
+                    <label class="text-xs text-gray-500">Obligatoire</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="new-q-required" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Conditional: options -->
+            <div id="new-options-block" style="display:none;">
+                <label class="block text-xs text-gray-500 mb-1">Options (une par ligne)</label>
+                <textarea id="new-q-options" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
+                          rows="3" placeholder="Option 1&#10;Option 2"></textarea>
+            </div>
+
+            <!-- Conditional: decimals -->
+            <div id="new-number-block" style="display:none;">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="new-q-decimals">
+                    <span class="text-xs text-gray-500">Permettre les décimales</span>
+                </label>
+            </div>
+
+            <!-- Conditional: scale labels -->
+            <div id="new-scale-block" style="display:none;">
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-500 mb-1">Étiquette pour 1 <span class="text-red-500">*</span></label>
+                        <input type="text" id="new-scale-1" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" maxlength="30">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-500 mb-1">Étiquette pour 10 <span class="text-red-500">*</span></label>
+                        <input type="text" id="new-scale-10" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" maxlength="30">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="addQuestion()" class="btn-outline px-5 py-2 rounded-lg font-medium text-sm w-full">
+                + Ajouter
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded-lg px-4 py-3 text-center">
+        Limite atteinte : {{ max_questions }} questions maximum par formulaire.
+    </div>
+    {% endif %}
+
+    <!-- Bottom save buttons (centered) -->
+    <div class="flex justify-center gap-3 mt-8">
+        <button onclick="submitForm(false)" class="btn-outline px-6 py-2.5 rounded-lg font-medium text-sm">Enregistrer</button>
+        <button onclick="submitForm(true)" class="btn-primary px-6 py-2.5 rounded-lg font-medium text-sm">Enregistrer et retourner</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// --------------------------------------------------------------------------
+// State
+// --------------------------------------------------------------------------
+let isDirty = false;
+const FORM_ID = "{{ form.id if form else '' }}";
+const IS_NEW  = {{ 'true' if is_new else 'false' }};
+const MAX_QUESTIONS = {{ max_questions }};
+const MAX_OPTIONS   = {{ max_options }};
+
+// --------------------------------------------------------------------------
+// Dirty flag
+// --------------------------------------------------------------------------
+function markDirty() { isDirty = true; }
+
+// --------------------------------------------------------------------------
+// Counter helper
+// --------------------------------------------------------------------------
+function updateCounter(el, max) {
+    const counter = el.nextElementSibling?.querySelector?.(".char-counter")
+                 || el.closest("div")?.querySelector(".char-counter");
+    if (counter) {
+        counter.textContent = `${el.value.length}/${max}`;
+        counter.classList.toggle("at-limit", el.value.length >= max);
+    }
+}
+// Init name counter
+document.getElementById("form-name-input").addEventListener("input", function() {
+    document.getElementById("name-counter").textContent = `${this.value.length}/100`;
+});
+
+// --------------------------------------------------------------------------
+// Move question up/down
+// --------------------------------------------------------------------------
+function moveQuestion(btn, direction) {
+    markDirty();
+    const card = btn.closest(".question-card");
+    const list = card.parentElement;
+    const cards = [...list.querySelectorAll(".question-card")];
+    const idx  = cards.indexOf(card);
+    const swap = idx + direction;
+    if (swap < 0 || swap >= cards.length) return;
+    if (direction === -1) list.insertBefore(card, cards[swap]);
+    else list.insertBefore(cards[swap], card);
+    updateQuestionNumbers();
+}
+
+function updateQuestionNumbers() {
+    document.querySelectorAll(".question-card").forEach((card, i) => {
+        card.dataset.index = i;
+        const header = card.querySelector(".question-card span");
+        // (labels updated on save)
+    });
+}
+
+// --------------------------------------------------------------------------
+// Delete question (with confirmation via inline)
+// --------------------------------------------------------------------------
+function deleteQuestion(btn) {
+    if (!confirm("Supprimer cette question ?")) return;
+    markDirty();
+    btn.closest(".question-card").remove();
+}
+
+// --------------------------------------------------------------------------
+// Type change → show/hide conditional blocks
+// --------------------------------------------------------------------------
+function handleTypeChange(select) {
+    markDirty();
+    const card = select.closest(".question-card");
+    const type = select.value;
+    card.querySelector(".q-options-block").style.display = (type === "select" || type === "multiselect") ? "block" : "none";
+    card.querySelector(".q-number-block").style.display  = (type === "number") ? "block" : "none";
+    card.querySelector(".q-scale-block").style.display   = (type === "scale")  ? "block" : "none";
+
+    // Clear conditional data when type changes (as per spec)
+    if (type !== "select" && type !== "multiselect") card.querySelector(".q-options").value = "";
+    if (type !== "number") card.querySelector(".q-decimals").checked = false;
+    if (type !== "scale") {
+        card.querySelector(".q-scale-1").value = "";
+        card.querySelector(".q-scale-10").value = "";
+    }
+}
+
+// --------------------------------------------------------------------------
+// New question: conditional visibility
+// --------------------------------------------------------------------------
+function showNewConditional() {
+    const type = document.getElementById("new-q-type").value;
+    document.getElementById("new-options-block").style.display  = (type === "select" || type === "multiselect") ? "block" : "none";
+    document.getElementById("new-number-block").style.display   = (type === "number") ? "block" : "none";
+    document.getElementById("new-scale-block").style.display    = (type === "scale")  ? "block" : "none";
+}
+
+// --------------------------------------------------------------------------
+// Add question to the list
+// --------------------------------------------------------------------------
+function addQuestion() {
+    const text = document.getElementById("new-q-text").value.trim();
+    if (!text) { showToast("Le texte de la question est obligatoire.", "error"); return; }
+    if (text.length < 5) { showToast("La question doit contenir au moins 5 caractères.", "error"); return; }
+
+    const currentCount = document.querySelectorAll(".question-card").length;
+    if (currentCount >= MAX_QUESTIONS) { showToast("Limite de questions atteinte.", "error"); return; }
+
+    const type     = document.getElementById("new-q-type").value;
+    const required = document.getElementById("new-q-required").checked;
+
+    // Build card HTML
+    const card = document.createElement("div");
+    card.className = "question-card bg-white rounded-xl shadow-sm border border-gray-200 p-5";
+    card.dataset.index = currentCount;
+    card.dataset.id    = "";
+    card.dataset.type  = type;
+    card.dataset.required = required ? "true" : "false";
+
+    card.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Question ${currentCount + 1}</span>
+            <div class="flex items-center gap-1">
+                <button onclick="moveQuestion(this, -1)" class="text-gray-300 hover:text-blue-500 p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                </button>
+                <button onclick="moveQuestion(this, 1)" class="text-gray-300 hover:text-blue-500 p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <button onclick="deleteQuestion(this)" class="text-gray-300 hover:text-red-500 p-1 ml-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="mb-3">
+            <textarea class="q-text w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
+                      rows="2" maxlength="500" oninput="markDirty(); updateCounter(this, 500)">${text}</textarea>
+            <div class="flex justify-end mt-1"><span class="char-counter text-xs text-gray-400">${text.length}/500</span></div>
+        </div>
+        <div class="flex items-center gap-4 mb-3">
+            <div class="flex-1">
+                <label class="block text-xs text-gray-500 mb-1">Type de réponse</label>
+                <select class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500" onchange="markDirty(); handleTypeChange(this)">
+                    <option value="text" ${type==='text'?'selected':''}>Texte</option>
+                    <option value="text_long" ${type==='text_long'?'selected':''}>Texte long</option>
+                    <option value="yes_no" ${type==='yes_no'?'selected':''}>Oui / Non</option>
+                    <option value="select" ${type==='select'?'selected':''}>Sélection unique</option>
+                    <option value="multiselect" ${type==='multiselect'?'selected':''}>Sélection multiple</option>
+                    <option value="date" ${type==='date'?'selected':''}>Date</option>
+                    <option value="number" ${type==='number'?'selected':''}>Nombre</option>
+                    <option value="email" ${type==='email'?'selected':''}>Email</option>
+                    <option value="phone" ${type==='phone'?'selected':''}>Téléphone</option>
+                    <option value="scale" ${type==='scale'?'selected':''}>Échelle 1–10</option>
+                </select>
+            </div>
+            <div class="flex items-end gap-2">
+                <label class="text-xs text-gray-500">Obligatoire</label>
+                <label class="toggle-switch"><input type="checkbox" class="q-required" ${required?'checked':''} onchange="markDirty()"><span class="toggle-slider"></span></label>
+            </div>
+        </div>
+        <div class="q-options-block" style="${(type==='select'||type==='multiselect')?'':'display:none;'}">
+            <label class="block text-xs text-gray-500 mb-1">Options (une par ligne)</label>
+            <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" rows="3" oninput="markDirty()">${document.getElementById('new-q-options').value}</textarea>
+        </div>
+        <div class="q-number-block" style="${type==='number'?'':'display:none;'}">
+            <label class="flex items-center gap-2"><input type="checkbox" class="q-decimals" ${document.getElementById('new-q-decimals').checked?'checked':''}><span class="text-xs text-gray-500">Permettre les décimales</span></label>
+        </div>
+        <div class="q-scale-block" style="${type==='scale'?'':'display:none;'}">
+            <div class="flex gap-4">
+                <div class="flex-1"><label class="block text-xs text-gray-500 mb-1">Étiquette pour 1 *</label><input type="text" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" maxlength="30" value="${document.getElementById('new-scale-1').value}"></div>
+                <div class="flex-1"><label class="block text-xs text-gray-500 mb-1">Étiquette pour 10 *</label><input type="text" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" maxlength="30" value="${document.getElementById('new-scale-10').value}"></div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("questions-list").appendChild(card);
+    markDirty();
+
+    // Reset new question form
+    document.getElementById("new-q-text").value = "";
+    document.getElementById("new-q-options").value = "";
+    document.getElementById("new-q-decimals").checked = false;
+    document.getElementById("new-scale-1").value = "";
+    document.getElementById("new-scale-10").value = "";
+    document.getElementById("new-q-type").value = "text";
+    showNewConditional();
+}
+
+// --------------------------------------------------------------------------
+// Serialize questions from DOM
+// --------------------------------------------------------------------------
+function serializeQuestions() {
+    const cards = document.querySelectorAll(".question-card");
+    return Array.from(cards).map((card, i) => ({
+        id:            card.dataset.id || null,
+        text:          card.querySelector(".q-text").value.trim(),
+        question_type: card.querySelector(".q-type").value,
+        is_required:   card.querySelector(".q-required").checked,
+        order:         i,
+        options:       card.querySelector(".q-options").value.split("\n").map(s => s.trim()).filter(Boolean),
+        allow_decimals: card.querySelector(".q-decimals").checked,
+        scale_label_1: card.querySelector(".q-scale-1").value.trim(),
+        scale_label_10: card.querySelector(".q-scale-10").value.trim(),
+    }));
+}
+
+// --------------------------------------------------------------------------
+// Submit form (save)
+// --------------------------------------------------------------------------
+async function submitForm(andReturn) {
+    const name = document.getElementById("form-name-input").value.trim();
+    const questions = serializeQuestions();
+
+    const payload = { name, questions };
+
+    showSpinner("Sauvegarde en cours...");
+    try {
+        const url = IS_NEW ? "/doctor/form/new" : `/doctor/form/${FORM_ID}/edit`;
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            isDirty = false;
+            showToast("Formulaire enregistré.", "success");
+            hideSpinner();
+            if (andReturn) {
+                window.location.href = "/doctor/home";
+            } else if (IS_NEW && data.form_id) {
+                // Redirect to edit URL for the newly created form
+                window.location.href = `/doctor/form/${data.form_id}/edit`;
+            }
+        } else {
+            const data = await res.json().catch(() => ({}));
+            hideSpinner();
+            if (data.errors) {
+                showToast(data.errors.join(" | "), "error");
+            } else {
+                showToast("Erreur lors de la sauvegarde.", "error");
+            }
+        }
+    } catch(e) {
+        hideSpinner();
+        showToast("Erreur réseau.", "error");
+    }
+}
+
+// --------------------------------------------------------------------------
+// Navigate back with unsaved check
+// --------------------------------------------------------------------------
+function navigateBack() {
+    if (isDirty) {
+        showUnsavedModal("/doctor/home");
+    } else {
+        window.location.href = "/doctor/home";
+    }
+}
+</script>
+{% endblock %}

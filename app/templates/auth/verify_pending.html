@@ -1,0 +1,44 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Vérification en cours — PrivateForm{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4">
+    <div class="w-full max-w-md text-center">
+
+        <!-- Icon -->
+        <div class="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+        </div>
+
+        <h1 class="text-xl font-bold text-gray-800 mb-2">Vérifiez votre email</h1>
+        <p class="text-gray-500 text-sm mb-1">
+            Un email de vérification a été envoyé à :
+        </p>
+        <p class="text-blue-600 font-semibold text-sm mb-5">{{ email }}</p>
+        <p class="text-gray-400 text-xs mb-6">Le lien expire dans 24 heures.</p>
+
+        <!-- Resend form -->
+        <form method="POST" action="/verify-pending/resend">
+            <input type="hidden" name="email" value="{{ email }}">
+            <button type="submit" class="btn-outline px-6 py-2 rounded-lg font-medium text-sm">
+                Renvoyer l'email
+            </button>
+        </form>
+
+        <!-- Feedback -->
+        {% if resend_success %}
+        <p class="text-green-600 text-sm mt-4">Email renvoyé avec succès !</p>
+        {% endif %}
+        {% if resend_error %}
+        <p class="text-red-500 text-sm mt-4">{{ resend_error }}</p>
+        {% endif %}
+
+        <p class="text-gray-400 text-xs mt-6">
+            Si vous ne recevez rien, vérifiez votre dossier spam ou <a href="/login" class="text-blue-600 hover:underline">retournez à la connexion</a>.
+        </p>
+    </div>
+</div>
+{% endblock %}

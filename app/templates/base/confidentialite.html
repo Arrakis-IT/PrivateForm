@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de Confidentialité - Private Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <img src="/static/img/logo.png" alt="Private Form" class="h-16 mx-auto mb-6">
+            <h1 class="text-4xl font-bold text-white mb-2">Politique de Confidentialité</h1>
+            <p class="text-blue-100">Dernière mise à jour : {{ current_date }}</p>
+        </div>
+
+        <!-- Content -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 md:p-12">
+            
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">1. Introduction</h2>
+                <p class="text-gray-600 mb-4">
+                    Private Form accorde une importance primordiale à la protection de vos données personnelles et de santé. La présente Politique de Confidentialité vous informe sur la manière dont nous collectons, utilisons et protégeons vos données dans le cadre de l'utilisation de notre plateforme accessible à l'adresse <strong>privateform.arrakis.lu</strong>.
+                </p>
+                <p class="text-gray-600">
+                    Cette politique est conforme au Règlement Général sur la Protection des Données (RGPD - Règlement UE 2016/679) et à la législation luxembourgeoise en matière de protection des données.
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">2. Responsable du traitement</h2>
+                <p class="text-gray-600">
+                    Le responsable du traitement de vos données personnelles est :<br><br>
+                    <strong>Juan Manuel SUÁREZ - Arrakis IT Services</strong><br>
+                    Email : <a href="mailto:privateform@arrakis.lu" class="text-blue-600 hover:underline">privateform@arrakis.lu</a><br>
+                    Téléphone : +352 691 292 193<br>
+                    Site web : <a href="https://www.arrakis.lu" class="text-blue-600 hover:underline" target="blank">www.arrakis.lu</a>
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">3. Données collectées</h2>
+                
+                <h3 class="text-xl font-semibold text-gray-700 mb-3">3.1 Données des professionnels de santé (Utilisateurs)</h3>
+                <p class="text-gray-600 mb-4">
+                    Lors de votre inscription, nous collectons les données suivantes :
+                </p>
+                <ul class="list-disc list-inside text-gray-600 mb-4 space-y-2">
+                    <li><strong>Données d'identification :</strong> nom, prénom, adresse email professionnelle</li>
+                    <li><strong>Données professionnelles :</strong> spécialité médicale, pays d'exercice</li>
+                    <li><strong>Données de contact :</strong> numéro de téléphone (optionnel)</li>
+                    <li><strong>Données de connexion :</strong> mot de passe chiffré, historique de connexion</li>
+                    <li><strong>Données techniques :</strong> adresse IP, type de navigateur, système d'exploitation</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-700 mb-3">3.2 Données des formulaires</h3>
+                <p class="text-gray-600 mb-4">
+                    Nous conservons uniquement la <strong>structure des formulaires</strong> que vous créez (intitulé, questions, type de questions). Nous ne conservons <strong>jamais</strong> les réponses des patients.
+                </p>
+
+                <h3 class="text-xl font-semibold text-gray-700 mb-3">3.3 Données des patients</h3>
+                <p class="text-gray-600 mb-4">
+                    <strong class="text-blue-600">Engagement fondamental :</strong> Private Form ne stocke <strong>aucune donnée de santé des patients</strong>.
+                </p>
+                <p class="text-gray-600">
+                    Lorsqu'un patient remplit un formulaire :
+                </p>
+                <ol class="list-decimal list-inside text-gray-600 mt-4 space-y-2">
+                    <li>Les réponses sont immédiatement chiffrées avec un algorithme AES-256</li>
+                    <li>Un PDF chiffré est généré et envoyé par email au professionnel de santé</li>
+                    <li>Les données sont définitivement supprimées de notre serveur</li>
+                    <li>Aucune copie n'est conservée, même temporairement</li>
+                </ol>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">4. Finalités du traitement</h2>
+                <p class="text-gray-600 mb-4">
+                    Vos données personnelles sont traitées aux fins suivantes :
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Gestion de votre compte :</strong> création, authentification, accès à votre espace personnel</li>
+                    <li><strong>Fourniture du service :</strong> création et gestion de formulaires, envoi de PDF chiffrés</li>
+                    <li><strong>Communication :</strong> envoi d'emails de vérification, notifications de sécurité</li>
+                    <li><strong>Sécurité :</strong> prévention des fraudes, protection contre les accès non autorisés</li>
+                    <li><strong>Amélioration du service :</strong> analyse statistique anonymisée de l'utilisation</li>
+                    <li><strong>Newsletter :</strong> envoi d'informations sur le service (uniquement si vous avez accepté)</li>
+                </ul>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">5. Base légale du traitement</h2>
+                <p class="text-gray-600 mb-4">
+                    Le traitement de vos données personnelles repose sur les bases légales suivantes :
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Exécution du contrat :</strong> gestion de votre compte et fourniture du service</li>
+                    <li><strong>Consentement :</strong> envoi de la newsletter (révocable à tout moment)</li>
+                    <li><strong>Intérêt légitime :</strong> sécurité de la plateforme, prévention des fraudes</li>
+                    <li><strong>Obligation légale :</strong> conservation des logs de connexion (loi luxembourgeoise)</li>
+                </ul>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">6. Destinataires des données</h2>
+                <p class="text-gray-600 mb-4">
+                    Vos données personnelles sont traitées exclusivement par Private Form. Nous ne vendons, ne louons ni ne partageons vos données avec des tiers à des fins commerciales.
+                </p>
+                <p class="text-gray-600 mb-4">
+                    Vos données peuvent être transmises aux catégories de destinataires suivantes :
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Prestataires techniques :</strong> hébergement (serveurs situés au Luxembourg), service d'envoi d'emails (Brevo)</li>
+                    <li><strong>Autorités compétentes :</strong> uniquement en cas d'obligation légale ou de réquisition judiciaire</li>
+                </ul>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">7. Transfert hors UE</h2>
+                <p class="text-gray-600">
+                    Toutes vos données sont hébergées au Luxembourg (Union Européenne). Nous ne transférons aucune donnée vers des pays situés en dehors de l'Espace Économique Européen.
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">8. Durée de conservation</h2>
+                <p class="text-gray-600 mb-4">
+                    Nous conservons vos données personnelles pendant les durées suivantes :
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Compte actif :</strong> pendant toute la durée d'utilisation de votre compte</li>
+                    <li><strong>Compte supprimé :</strong> suppression immédiate des données, sauf obligation légale</li>
+                    <li><strong>Logs de connexion :</strong> 12 mois (conformément à la législation luxembourgeoise)</li>
+                    <li><strong>Données de facturation :</strong> 10 ans (obligation légale comptable)</li>
+                </ul>
+                <p class="text-gray-600 mt-4 font-semibold">
+                    Rappel : Les réponses des patients aux formulaires ne sont <strong>jamais</strong> conservées sur nos serveurs.
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">9. Sécurité des données</h2>
+                <p class="text-gray-600 mb-4">
+                    Nous mettons en œuvre toutes les mesures techniques et organisationnelles appropriées pour garantir la sécurité de vos données :
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Chiffrement :</strong> protocole HTTPS (TLS 1.3), chiffrement AES-256 des PDF</li>
+                    <li><strong>Authentification :</strong> mots de passe hachés avec bcrypt, sessions sécurisées (JWT)</li>
+                    <li><strong>Hébergement sécurisé :</strong> serveurs au Luxembourg avec pare-feu et surveillance 24/7</li>
+                    <li><strong>Limitation d'accès :</strong> accès aux données strictement limité aux administrateurs autorisés</li>
+                    <li><strong>Sauvegardes :</strong> sauvegardes régulières chiffrées</li>
+                    <li><strong>Suppression définitive :</strong> suppression immédiate et irréversible des réponses des patients</li>
+                </ul>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">10. Vos droits (RGPD)</h2>
+                <p class="text-gray-600 mb-4">
+                    Conformément au RGPD, vous disposez des droits suivants concernant vos données personnelles :
+                </p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-700">✓ Droit d'accès</h4>
+                        <p class="text-gray-600 text-sm">Obtenir une copie de vos données personnelles</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-700">✓ Droit de rectification</h4>
+                        <p class="text-gray-600 text-sm">Corriger ou mettre à jour vos données inexactes ou incomplètes</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-700">✓ Droit à l'effacement ("droit à l'oubli")</h4>
+                        <p class="text-gray-600 text-sm">Demander la suppression de vos données personnelles</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-700">✓ Droit à la limitation du traitement</h4>
+                        <p class="text-gray-600 text-sm">Demander la suspension du traitement de vos données</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-700">✓ Droit à la portabilité</h4>
+                        <p class="text-gray-600 text-sm">Recevoir vos données dans un format structuré et couramment utilisé</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-700">✓ Droit d'opposition</h4>
+                        <p class="text-gray-600 text-sm">Vous opposer au traitement de vos données pour des motifs légitimes</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-700">✓ Droit de retirer votre consentement</h4>
+                        <p class="text-gray-600 text-sm">Retirer votre consentement à tout moment (newsletter)</p>
+                    </div>
+                </div>
+
+                <p class="text-gray-600 mt-6">
+                    Pour exercer ces droits, vous pouvez :
+                </p>
+                <ul class="list-disc list-inside text-gray-600 mt-2 space-y-2">
+                    <li>Accéder à votre espace personnel sur la plateforme</li>
+                    <li>Nous contacter par email : <a href="mailto:privateform@arrakis.lu" class="text-blue-600 hover:underline">privateform@arrakis.lu</a></li>
+                </ul>
+                <p class="text-gray-600 mt-4 text-sm">
+                    Nous nous engageons à répondre à votre demande dans un délai d'un mois maximum.
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">11. Droit de réclamation</h2>
+                <p class="text-gray-600 mb-4">
+                    Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de l'autorité de contrôle compétente :
+                </p>
+                <p class="text-gray-600">
+                    <strong>Commission Nationale pour la Protection des Données (CNPD)</strong><br>
+                    15, boulevard du Jazz<br>
+                    L-4370 Belvaux<br>
+                    Luxembourg<br>
+                    Téléphone : (+352) 26 10 60 - 1<br>
+                    Email : <a href="mailto:info@cnpd.lu" class="text-blue-600 hover:underline">info@cnpd.lu</a><br>
+                    Site web : <a href="https://cnpd.public.lu" class="text-blue-600 hover:underline" target="blank">https://cnpd.public.lu</a>
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">12. Cookies</h2>
+                <p class="text-gray-600 mb-4">
+                    Notre plateforme utilise uniquement des cookies strictement nécessaires au fonctionnement du service :
+                </p>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Cookie de session (JWT) :</strong> permet de maintenir votre connexion sécurisée pendant 2 heures</li>
+                </ul>
+                <p class="text-gray-600 mt-4">
+                    Nous n'utilisons <strong>aucun cookie de suivi, de publicité ou d'analyse</strong>. Votre navigation est totalement privée.
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">13. Modifications de la politique</h2>
+                <p class="text-gray-600">
+                    Nous nous réservons le droit de modifier la présente Politique de Confidentialité à tout moment. Toute modification sera publiée sur cette page avec une nouvelle date de mise à jour. Nous vous encourageons à consulter régulièrement cette page.
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">14. Contact</h2>
+                <p class="text-gray-600 mb-4">
+                    Pour toute question relative à la protection de vos données personnelles, vous pouvez nous contacter :
+                </p>
+                 <ul class="list-none text-gray-600 mt-4 space-y-2">
+                    <li>Email : <a href="mailto:privateform@arrakis.lu" class="text-blue-600 hover:underline">privateform@arrakis.lu</a></li>
+                    <li>Téléphone : +352 691 292 193</li>
+                    <li>Site web : <a href="https://www.arrakis.lu" class="text-blue-600 hover:underline" target="blank">www.arrakis.lu</a></li>
+                </ul>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8">
+            <a href="/" class="inline-block bg-white text-blue-600 font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-shadow">
+                Retour à l'accueil
+            </a>
+        </div>
+    </div>
+</body>
+</html>

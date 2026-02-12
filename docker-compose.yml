@@ -1,0 +1,133 @@
+# =============================================================================
+# PrivateForm - Docker Compose
+# =============================================================================
+# Services: app (FastAPI), db (PostgreSQL), nginx
+# Secrets: sensitive variables via Docker secrets
+# =============================================================================
+
+services:
+  # -------------------------------------------------------------------------
+  # FastAPI Application
+  # -------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: privateform_app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      # Secrets are mounted as files; app reads them from /run/secrets/
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      APP_SECRET_KEY_FILE: /run/secrets/app_secret_key
+      BREVO_API_KEY_FILE: /run/secrets/brevo_api_key
+      HCAPTCHA_SITE_KEY_FILE: /run/secrets/hcaptcha_site_key
+      HCAPTCHA_SECRET_KEY_FILE: /run/secrets/hcaptcha_secret_key
+    volumes:
+      - logs:/app/logs
+      - static_files:/app/app/static
+    secrets:
+      - db_password
+      - jwt_secret
+      - app_secret_key
+      - brevo_api_key
+      - hcaptcha_site_key
+      - hcaptcha_secret_key
+    networks:
+      - privateform_net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL Database
+  # -------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: privateform_db
+    environment:
+      POSTGRES_DB: privateform_db
+      POSTGRES_USER: privateform_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    secrets:
+      - db_password
+    networks:
+      - privateform_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U privateform_user -d privateform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # -------------------------------------------------------------------------
+  # Nginx - Proxy inverso
+  # -------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: privateform_nginx
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/privateform.conf:/etc/nginx/conf.d/privateform.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+      - static_files:/usr/share/nginx/html/static
+    networks:
+      - privateform_net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  pgdata:                    # PostgreSQL data (persistent)
+  logs:                      # Application logs
+  static_files:              # Static files shared between the app and nginx
+
+# -----------------------------------------------------------------------------
+# Networks
+# -----------------------------------------------------------------------------
+networks:
+  privateform_net:
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# Secrets - Created from files from the server
+# -----------------------------------------------------------------------------
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  app_secret_key:
+    file: ./secrets/app_secret_key.txt
+  brevo_api_key:
+    file: ./secrets/brevo_api_key.txt
+  hcaptcha_site_key:
+    file: ./secrets/hcaptcha_site_key.txt
+  hcaptcha_secret_key:
+    file: ./secrets/hcaptcha_secret_key.txt

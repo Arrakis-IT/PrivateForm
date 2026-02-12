@@ -1,0 +1,74 @@
+{% extends "base/layout.html" %}
+
+{% block title %}PrivateForm — Formulaires médicaux sécurisés et privés{% endblock %}
+
+{% block content %}
+<!-- =====================================================================
+     HERO — Full viewport gradient landing
+     ===================================================== -->
+<div class="min-h-screen pf-gradient flex flex-col items-center justify-center relative overflow-hidden">
+
+    <!-- Decorative blobs -->
+    <div class="absolute top-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+    <div class="absolute bottom-0 right-0 w-80 h-80 bg-white opacity-5 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
+
+    <!-- Content -->
+    <div class="relative z-10 text-center px-6 max-w-2xl mx-auto">
+
+        <!-- Logo -->
+        <div class="mb-8">
+            <img src="/static/img/logo.png" alt="PrivateForm" class="h-20 mx-auto drop-shadow-lg">
+        </div>
+
+        <!-- Titre -->
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+            Arrakis Private Form
+        </h1>
+
+        <!-- Sous-titre -->
+        <p class="text-lg md:text-xl text-white text-opacity-90 mb-8 leading-relaxed">
+            Créez des formulaires pour vos patients.<br>
+            Les réponses sont envoyées chiffrées à votre email et détruites du serveur.<br>
+            <span class="font-semibold">Zéro stockage, confidentialité maximale.</span>
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/register" class="bg-white text-blue-600 font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-shadow text-center">
+                S'inscrire
+            </a>
+            <a href="/login" class="border-2 border-white text-white font-semibold px-8 py-3 rounded-full hover:bg-white hover:bg-opacity-10 transition-colors text-center">
+                Se connecter
+            </a>
+        </div>
+
+        <!-- Privacy badge -->
+        <div class="mt-10 flex items-center justify-center gap-2 text-white text-opacity-70 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span>Conforme RGPD · Hébergé au Luxembourg</span>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     FOOTER
+     ===================================================== -->
+{% endblock %}
+
+{% block footer %}
+<footer class="bg-gray-800 text-gray-400 text-sm py-6 px-4">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+            <img src="/static/img/logo.png" alt="PrivateForm" class="h-6 opacity-60">
+            <span class="text-gray-500">©  2026 Arrakis IT Services</span>
+        </div>
+        <div class="flex gap-5">
+            <a href="/cgu" class="hover:text-white transition-colors">CGU</a>
+            <a href="/confidentialite" class="hover:text-white transition-colors">Confidentialité</a>
+            <a href="mailto:privateform@arrakis.lu" class="hover:text-white transition-colors">Contact</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}
