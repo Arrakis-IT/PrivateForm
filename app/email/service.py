@@ -14,7 +14,7 @@ from app.core.rate_limiter import check_alert_limit
 
 logger = get_logger("email")
 
-BREVO_API_URL = "https://api.v3.sendinblue.com/v3/smtp/email"
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
 async def _send_email(
