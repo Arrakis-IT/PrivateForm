@@ -17,7 +17,7 @@ logger = get_logger("email")
 BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
-async def _send_email(
+async def _send_email_original(
     to_email: str,
     to_name: str,
     subject: str,
@@ -64,6 +64,60 @@ async def _send_email(
         logger.error(f"Error sending email to {to_email}: {e}")
         return False
 
+async def _send_email(
+    to_email: str,
+    to_name: str,
+    subject: str,
+    html_body: str,
+    attachments: list[dict] | None = None,
+) -> bool:
+    """
+    Base function to send email via Brevo API.
+    Returns True if sent successfully, False if it fails.
+    """
+    logger.info(f"Attempting to send email to {to_email}, subject: {subject}")  # ← AÑADIR
+    logger.info(f"Using API URL: {BREVO_API_URL}")  # ← AÑADIR
+    logger.info(f"API Key starts with: {settings.BREVO_API_KEY[:20]}")  # ← AÑADIR
+    
+    headers = {
+        "api-key": settings.BREVO_API_KEY,
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "sender": {
+            "name": settings.BREVO_SENDER_NAME,
+            "email": settings.BREVO_SENDER_EMAIL,
+        },
+        "replyTo": {
+            "email": settings.BREVO_REPLY_TO,
+        },
+        "to": [
+            {
+                "email": to_email,
+                "name": to_name,
+            }
+        ],
+        "subject": subject,
+        "htmlContent": html_body,
+    }
+
+    if attachments:
+        payload["attachment"] = attachments
+    
+    try:
+        logger.info("Creating httpx client...")  # ← AÑADIR
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            logger.info(f"Posting to {BREVO_API_URL}")  # ← AÑADIR
+            response = await client.post(BREVO_API_URL, json=payload, headers=headers)
+            logger.info(f"Got response: {response.status_code}")  # ← AÑADIR
+            response.raise_for_status()
+            logger.info(f"Email sent successfully to {to_email}: {subject}")
+            return True
+    except Exception as e:
+        logger.error(f"Error sending email to {to_email}: {e}")
+        logger.exception("Full traceback:")  # ← AÑADIR (muestra stack trace completo)
+        return False
 
 # =============================================================================
 # Base HTML template for emails
