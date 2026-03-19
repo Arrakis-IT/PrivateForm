@@ -17,53 +17,6 @@ logger = get_logger("email")
 BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
-async def _send_email_original(
-    to_email: str,
-    to_name: str,
-    subject: str,
-    html_body: str,
-    attachments: list[dict] | None = None,
-) -> bool:
-    """
-    Base function to send email via Brevo API.
-    Returns True if sent successfully, False if it fails.
-    """
-    headers = {
-        "api-key": settings.BREVO_API_KEY,
-        "Content-Type": "application/json",
-    }
-
-    payload = {
-        "sender": {
-            "name": settings.BREVO_SENDER_NAME,
-            "email": settings.BREVO_SENDER_EMAIL,
-        },
-        "replyTo": {
-            "email": settings.BREVO_REPLY_TO,
-        },
-        "to": [
-            {
-                "email": to_email,
-                "name": to_name,
-            }
-        ],
-        "subject": subject,
-        "htmlContent": html_body,
-    }
-
-    if attachments:
-        payload["attachment"] = attachments
-
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(BREVO_API_URL, json=payload, headers=headers)
-            response.raise_for_status()
-            logger.info(f"Email sent successfully to {to_email}: {subject}")
-            return True
-    except Exception as e:
-        logger.error(f"Error sending email to {to_email}: {e}")
-        return False
-
 async def _send_email(
     to_email: str,
     to_name: str,
@@ -75,10 +28,6 @@ async def _send_email(
     Base function to send email via Brevo API.
     Returns True if sent successfully, False if it fails.
     """
-    logger.info(f"Attempting to send email to {to_email}, subject: {subject}")  # ← AÑADIR
-    logger.info(f"Using API URL: {BREVO_API_URL}")  # ← AÑADIR
-    logger.info(f"API Key starts with: {settings.BREVO_API_KEY[:20]}")  # ← AÑADIR
-    
     headers = {
         "api-key": settings.BREVO_API_KEY,
         "Content-Type": "application/json",
@@ -104,19 +53,15 @@ async def _send_email(
 
     if attachments:
         payload["attachment"] = attachments
-    
+
     try:
-        logger.info("Creating httpx client...")  # ← AÑADIR
         async with httpx.AsyncClient(timeout=30.0) as client:
-            logger.info(f"Posting to {BREVO_API_URL}")  # ← AÑADIR
             response = await client.post(BREVO_API_URL, json=payload, headers=headers)
-            logger.info(f"Got response: {response.status_code}")  # ← AÑADIR
             response.raise_for_status()
             logger.info(f"Email sent successfully to {to_email}: {subject}")
             return True
     except Exception as e:
         logger.error(f"Error sending email to {to_email}: {e}")
-        logger.exception("Full traceback:")  # ← AÑADIR (muestra stack trace completo)
         return False
 
 # =============================================================================
@@ -259,9 +204,6 @@ async def send_verification_email(to_email: str, doctor_name: str, verification_
     Sends the account verification email.
     Includes link, expiration (24h), alternative URL and non-recognition notice.
     """
-    logger.info(f"[VERIFY] Starting verification email for {to_email}")  # ← AÑADIR
-    logger.info(f"[VERIFY] Doctor name: {doctor_name}")  # ← AÑADIR
-    logger.info(f"[VERIFY] Verification URL: {verification_url}")  # ← AÑADIR
 
     # Anti-spam tip
     anti_spam_note = f"""
@@ -295,14 +237,12 @@ async def send_verification_email(to_email: str, doctor_name: str, verification_
     </div>
     """
     result: bool
-    logger.info(f"[VERIFY] Calling _send_email...")  # ← AÑADIR
     result = await _send_email(
         to_email=to_email,
         to_name=doctor_name,
         subject="Vérifiez votre compte PrivateForm",
         html_body=_email_base_template(content),
     )
-    logger.info(f"[VERIFY] _send_email returned: {result}")  # ← AÑADIR
     return result
 
 # =============================================================================
@@ -333,13 +273,14 @@ async def send_password_reset_email(to_email: str, doctor_name: str, reset_url: 
         Votre mot de passe restera inchangé et votre compte reste sécurisé.
     </div>
     """
-
-    return await _send_email(
+    result: bool
+    result = await _send_email(
         to_email=to_email,
         to_name=doctor_name,
         subject="Réinitialisation de votre mot de passe PrivateForm",
         html_body=_email_base_template(content),
     )
+    return result
 
 
 # =============================================================================
@@ -368,13 +309,14 @@ async def send_password_changed_email(to_email: str, doctor_name: str, change_ti
     </div>
     """
 
-    return await _send_email(
+    result: bool
+    result = await _send_email(
         to_email=to_email,
         to_name=doctor_name,
         subject="Votre mot de passe a été modifié",
         html_body=_email_base_template(content),
     )
-
+    return result
 
 # =============================================================================
 # Email: New form notification (with encrypted PDF)
@@ -420,13 +362,15 @@ async def send_form_submission_email(
         }
     ]
 
-    return await _send_email(
+    result: bool
+    result = await _send_email(
         to_email=to_email,
         to_name=doctor_name,
         subject=f"Nouveau formulaire reçu: {form_name}",
         html_body=_email_base_template(content),
         attachments=attachments,
     )
+    return result
 
 
 # =============================================================================
@@ -470,9 +414,11 @@ async def send_critical_alert_email(
     <p>Merci de vérifier les logs de l'application pour plus de détails.</p>
     """
 
-    return await _send_email(
+    result: bool
+    result = await _send_email(
         to_email=settings.ALERT_EMAIL,
         to_name="PrivateForm Alertes",
         subject="⚠️ PrivateForm - Erreur critique",
         html_body=_email_base_template(content),
     )
+    return result
