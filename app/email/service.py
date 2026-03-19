@@ -259,6 +259,10 @@ async def send_verification_email(to_email: str, doctor_name: str, verification_
     Sends the account verification email.
     Includes link, expiration (24h), alternative URL and non-recognition notice.
     """
+    logger.info(f"[VERIFY] Starting verification email for {to_email}")  # ← AÑADIR
+    logger.info(f"[VERIFY] Doctor name: {doctor_name}")  # ← AÑADIR
+    logger.info(f"[VERIFY] Verification URL: {verification_url}")  # ← AÑADIR
+
     # Anti-spam tip
     anti_spam_note = f"""
     <div class="info">
@@ -290,14 +294,16 @@ async def send_verification_email(to_email: str, doctor_name: str, verification_
         Votre sécurité n'est pas compromise.
     </div>
     """
-
-    return await _send_email(
+    result: bool
+    logger.info(f"[VERIFY] Calling _send_email...")  # ← AÑADIR
+    result = await _send_email(
         to_email=to_email,
         to_name=doctor_name,
         subject="Vérifiez votre compte PrivateForm",
         html_body=_email_base_template(content),
     )
-
+    logger.info(f"[VERIFY] _send_email returned: {result}")  # ← AÑADIR
+    return result
 
 # =============================================================================
 # Email: Password recovery
