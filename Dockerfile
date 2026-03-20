@@ -8,7 +8,7 @@
 # --- Stage 1: Install dependencies ---
 FROM python:3.12-slim AS builder
 
-# Install sytem dependencies needed to build Python packages
+# Install system dependencies needed to build Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
@@ -26,9 +26,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # --- Stage 2: Final production image ---
 FROM python:3.12-slim
 
-# Just install runtime dependencies
+# Install runtime dependencies + Unicode fonts
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed dependencies from builder
