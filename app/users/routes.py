@@ -27,7 +27,7 @@ from app.core.models import Doctor, MEDICAL_SPECIALTIES, AVAILABLE_COUNTRIES
 from app.auth.utils import (
     get_current_doctor_id, hash_password, verify_password,
     is_password_valid, validate_password_strength,
-    clear_auth_cookie,
+    clear_auth_cookie, revoke_token,
 )
 from app.auth.crypto import encrypt_pdf_password
 from app.email.service import send_password_changed_email
@@ -235,3 +235,43 @@ async def change_pdf_password(
     logger.info(f"PDF password changed for doctor {doctor_id}")
 
     return JSONResponse({"success": True, "message": "Mot de passe PDF mis à jour avec succès."})
+
+
+# =============================================================================
+# POST /doctor/profile/delete-account — Permanent account deletion
+# =============================================================================
+
+@router.post("/profile/delete-account", response_class=JSONResponse)
+async def delete_account(
+    request: Request,
+    doctor_id: str = Depends(get_current_doctor_id),
+    db: Session = Depends(get_db),
+):
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"success": False, "error": "Données invalides."}, status_code=400)
+
+    doctor = get_doctor(db, doctor_id)
+    if not doctor:
+        return JSONResponse({"success": False, "error": "Médecin non trouvé."}, status_code=404)
+
+    # Require password confirmation
+    password = body.get("password", "")
+    if not verify_password(password, doctor.password_hash):
+        return JSONResponse({"success": False, "error": "Mot de passe incorrect."}, status_code=400)
+
+    # Revoke current JWT before deleting
+    token = request.cookies.get("access_token")
+    if token:
+        revoke_token(token)
+
+    # Delete doctor — cascades to forms, questions, tokens
+    db.delete(doctor)
+    db.commit()
+
+    logger.info(f"Account permanently deleted for doctor {doctor_id}")
+
+    response = JSONResponse({"success": True})
+    clear_auth_cookie(response)
+    return response
