@@ -45,7 +45,7 @@ COPY alembic.ini ./
 COPY scripts/ ./scripts/
 
 # Create logs directory
-RUN mkdir -p /app/logs && chmod 777 /app/logs
+RUN mkdir -p /app/logs && chmod 750 /app/logs
 
 # Create non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
