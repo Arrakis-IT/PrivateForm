@@ -27,6 +27,7 @@ services:
       BREVO_API_KEY_FILE: /run/secrets/brevo_api_key
       HCAPTCHA_SITE_KEY_FILE: /run/secrets/hcaptcha_site_key
       HCAPTCHA_SECRET_KEY_FILE: /run/secrets/hcaptcha_secret_key
+      PDF_MASTER_KEY_FILE: /run/secrets/pdf_master_key
     volumes:
       - logs:/app/logs
       - static_files:/app/app/static
