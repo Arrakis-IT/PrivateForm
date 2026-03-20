@@ -476,7 +476,11 @@ async function submitForm(andReturn) {
         if (res.ok) {
             const data = await res.json();
             isDirty = false;
-            showToast("Formulaire enregistré.", "success");
+            if (data.was_deactivated) {
+                showToast("Formulaire enregistré et désactivé. Réactivez-le quand il est prêt.", "warning");
+            } else {
+                showToast("Formulaire enregistré.", "success");
+            }
             hideSpinner();
             if (andReturn) {
                 window.location.href = "/doctor/home";

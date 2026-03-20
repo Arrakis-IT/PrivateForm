@@ -391,6 +391,10 @@ async def edit_form_submit(request: Request, form_id: str, db: Session = Depends
     # Update form
     form.name = form_name
 
+    # Deactivate form during edit to prevent inconsistencies with in-flight submissions
+    was_active = form.is_active
+    form.is_active = False
+
     # Delete existing questions and recreate them (simpler than trying to diff)
     db.query(Question).filter(Question.form_id == form_id).delete()
 
@@ -415,8 +419,8 @@ async def edit_form_submit(request: Request, form_id: str, db: Session = Depends
     db.commit()
     logger.info(f"Form edited: {form.name} by doctor {doctor_id}")
 
-    # Return JSON with success
-    return JSONResponse(content={"success": True, "form_id": form_id})
+    # Return JSON with success; notify frontend if form was deactivated
+    return JSONResponse(content={"success": True, "form_id": form_id, "was_deactivated": was_active})
 
 
 # =============================================================================
