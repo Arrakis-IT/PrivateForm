@@ -4,6 +4,16 @@
 # Instance of FastAPI, middlewares, routers and startup event.
 # =============================================================================
 
+# PrivateForm - Privacy-first medical forms
+# Copyright (C) 2026 Juan Manuel SUÁREZ - Arrakis IT Services
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# See LICENSE file for full terms.
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles

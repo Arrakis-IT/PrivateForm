@@ -5,6 +5,7 @@
 # Environment
 .env
 .env.local
+.env.production
 
 # Python
 __pycache__/
@@ -50,12 +51,16 @@ Thumbs.db
 # Logs
 logs/
 *.log
+*.sqlite
+*.db
 
 # Docker
 docker-compose.override.yml
 
 # Secrets
 secrets/
+*.key
+*.pem
 
 # Static uploads (logos se manejan manualmente)
 app/static/img/logo.png
