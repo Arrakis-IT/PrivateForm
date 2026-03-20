@@ -164,44 +164,35 @@ class PrivateFormPDF(FPDF):
         self.set_text_color(156, 163, 175)
         self.cell(0, 4, f"Page {self.page_no()}", new_x="LMARGIN", new_y="NEXT", align="C")
 
-    def _add_watermark(self):
-        """
-        Adds watermark (large logo, 30% opacity) centered on the page.
-        Executed when generating final PDF (post-processing with PIL).
-        """
-        # Watermark is added as image with opacity
-        # fpdf2 does not support native opacity, so we use image with alpha
-        if not LOGO_PATH.exists():
-            logger.warning("Logo not found at expected path for watermark.")
-            return
+def _add_watermark(self):
+    """
+    Adds watermark (large logo, 30% opacity) centered on the page.
+    Uses an in-memory buffer — no temporary files written to disk.
+    """
+    if not LOGO_PATH.exists():
+        logger.warning("Logo not found at expected path for watermark.")
+        return
 
-        try:
-            # Create image with 30% opacity
-            logo = Image.open(LOGO_PATH).convert("RGBA")
-            # Adjust alpha to 30% (76 of 255)
-            alpha = logo.split()[3]
-            alpha = alpha.point(lambda p: int(p * 0.30))
-            logo.putalpha(alpha)
+    try:
+        logo = Image.open(LOGO_PATH).convert("RGBA")
+        alpha = logo.split()[3]
+        alpha = alpha.point(lambda p: int(p * 0.30))
+        logo.putalpha(alpha)
 
-            # Save temporarily as PNG with alpha
-            watermark_path = "/tmp/privateform_watermark.png"
-            logo.save(watermark_path, "PNG")
+        # Keep watermark in memory instead of writing to /tmp
+        watermark_buffer = io.BytesIO()
+        logo.save(watermark_buffer, "PNG")
+        watermark_buffer.seek(0)
 
-            # Calculate large centered size
-            # Maximum width: 120mm centered on A4 page (210mm)
-            img_width = 120
-            img_height = logo.size[1] * (img_width / logo.size[0])
+        img_width = 120
+        img_height = logo.size[1] * (img_width / logo.size[0])
+        x = (self.w - img_width) / 2
+        y = (self.h - img_height) / 2
 
-            # Centered position
-            x = (self.w - img_width) / 2
-            # Vertical center of page (approx.)
-            y = (self.h - img_height) / 2
+        self.image(watermark_buffer, x=x, y=y, w=img_width)
 
-            # Add image
-            self.image(watermark_path, x=x, y=y, w=img_width)
-
-        except Exception as e:
-            logger.error(f"Error adding watermark: {e}")
+    except Exception as e:
+        logger.error(f"Error adding watermark: {e}")
 
 
 def generate_pdf(
@@ -375,6 +366,9 @@ def generate_and_encrypt_pdf(
 
     # 2. Encrypt PDF
     encrypted_pdf_bytes = encrypt_pdf(pdf_bytes, encryption_password)
+
+    # 3. Explicitly discard unencrypted bytes before returning
+    del pdf_bytes
 
     return encrypted_pdf_bytes
 
