@@ -120,3 +120,23 @@ def check_alert_limit() -> bool:
         max_attempts=settings.ALERT_MAX_PER_HOUR,
         window_seconds=3600
     )
+
+def check_login(request: Request, email: str) -> bool:
+    """
+    Checks login rate limits by IP and by email.
+    Both must pass — returns False if either limit is exceeded.
+    """
+    ip = get_client_ip(request)
+    window = settings.LOGIN_WINDOW_MINUTES * 60
+
+    ip_allowed = login_ip_limiter.is_allowed(
+        ip,
+        max_attempts=settings.LOGIN_ATTEMPTS_PER_IP,
+        window_seconds=window,
+    )
+    email_allowed = login_email_limiter.is_allowed(
+        email,
+        max_attempts=settings.LOGIN_ATTEMPTS_PER_EMAIL,
+        window_seconds=window,
+    )
+    return ip_allowed and email_allowed

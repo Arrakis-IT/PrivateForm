@@ -31,7 +31,7 @@ from app.auth.utils import (
     get_token_from_cookie, decode_access_token,
 )
 from app.auth.crypto import encrypt_pdf_password
-from app.core.rate_limiter import check_password_reset, check_verification_resend
+from app.core.rate_limiter import check_password_reset, check_verification_resend, check_login
 from app.email.service import (
     send_verification_email, send_password_reset_email,
     send_password_changed_email,
@@ -322,6 +322,13 @@ async def login_submit(request: Request, db: Session = Depends(get_db)):
         return templates.TemplateResponse(request, "auth/login.html", {
             "errors": errors, "form_data": {"email": email},
         }, status_code=400)
+    
+    # Rate limiting: must be checked before hitting the database
+    if not check_login(request, email):
+        return templates.TemplateResponse(request, "auth/login.html", {
+            "errors": {"general": "Trop de tentatives. Réessayez dans 15 minutes."},
+            "form_data": {"email": email},
+        }, status_code=429)
 
     doctor = get_doctor_by_email(db, email)
     if not doctor:

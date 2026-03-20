@@ -93,6 +93,10 @@ class Settings(BaseSettings):
     PATIENT_SUBMISSIONS_PER_HOUR: int = 2
     PASSWORD_RESET_ATTEMPTS_PER_HOUR: int = 3
     VERIFICATION_RESEND_PER_DAY: int = 3
+    LOGIN_ATTEMPTS_PER_IP: int = 10       # Per IP per window
+    LOGIN_ATTEMPTS_PER_EMAIL: int = 5     # Per email per window
+    LOGIN_WINDOW_MINUTES: int = 15
+
 
     # -----------------------------------------------------------------------
     # Properties that read secrets
