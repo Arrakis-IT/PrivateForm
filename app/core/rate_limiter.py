@@ -75,6 +75,7 @@ alert_limiter = RateLimiter()
 # Login attempts: per IP and per email (15-minute window)
 login_ip_limiter = RateLimiter()
 login_email_limiter = RateLimiter()
+register_ip_limiter = RateLimiter()
 
 
 def get_client_ip(request: Request) -> str:
@@ -148,3 +149,16 @@ def check_login(request: Request, email: str) -> bool:
         window_seconds=window,
     )
     return ip_allowed and email_allowed
+
+def check_register(request: Request) -> bool:
+    """
+    Checks registration rate limit by IP.
+    Stricter than login — registration is a one-time action.
+    """
+    ip = get_client_ip(request)
+    window = settings.REGISTER_WINDOW_MINUTES * 60
+    return register_ip_limiter.is_allowed(
+        ip,
+        max_attempts=settings.REGISTER_ATTEMPTS_PER_IP,
+        window_seconds=window,
+    )

@@ -32,7 +32,7 @@ from app.auth.utils import (
     get_dummy_hash,
 )
 from app.auth.crypto import encrypt_pdf_password
-from app.core.rate_limiter import check_password_reset, check_verification_resend, check_login
+from app.core.rate_limiter import check_password_reset, check_verification_resend, check_login, check_register
 from app.email.service import (
     send_verification_email, send_password_reset_email,
     send_password_changed_email,
@@ -141,6 +141,19 @@ async def register_submit(request: Request, db: Session = Depends(get_db)):
         errors["phone"] = "Le format du téléphone doit inclure l'indicatif (ex: +352...)."
     if not terms_accepted:
         errors["terms_accepted"] = "Vous devez accepter les CGU et la politique de confidentialité."
+
+    # Rate limiting: before any DB query
+    if not check_register(request):
+        return templates.TemplateResponse(request, "auth/register.html", {
+            "specialties": MEDICAL_SPECIALTIES,
+            "countries": AVAILABLE_COUNTRIES,
+            "errors": {"general": "Trop de tentatives. Réessayez dans 1 heure."},
+            "form_data": {
+                "last_name": last_name, "first_name": first_name, "email": email,
+                "specialty": specialty, "phone": phone, "country": country,
+            },
+            "password_checks": validate_password_strength(password),
+        }, status_code=429)
 
     if errors:
         logger.warning(f"Validation errors in registration: {errors}")
