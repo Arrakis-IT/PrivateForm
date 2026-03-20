@@ -53,11 +53,10 @@ class PrivateFormPDF(FPDF):
         self.doctor_name = doctor_name
         self.form_name = form_name
         self.submission_timestamp = submission_timestamp
-        # Add Unicode font DejaVu
+        # Add Unicode fontsDejaVu
         self.add_font("DejaVu", "", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
         self.add_font("DejaVu", "B", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
-        self.add_font("DejaVu", "I", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf")
-    
+        self.add_font("DejaVu", "I", "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf")
         self.set_auto_page_break(auto=True, margin=45)  # Space for footer
 
     def header(self):
