@@ -26,6 +26,18 @@ from app.auth.token_denylist import denylist
 # --- Hashing context (bcrypt) ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# RFC 5322 practical subset — rejects the most common malformed inputs
+_EMAIL_REGEX = re.compile(
+    r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$'
+)
+
+def is_valid_email(email: str) -> bool:
+    """
+    Validates email format using a practical regex.
+    Does not perform DNS/MX lookup — format only.
+    """
+    return bool(_EMAIL_REGEX.match(email)) and len(email) <= 254
+
 
 # =============================================================================
 # Passwords

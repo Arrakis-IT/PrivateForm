@@ -28,7 +28,7 @@ from app.core.models import Doctor, VerificationToken, PasswordResetToken, MEDIC
 from app.auth.utils import (
     hash_password, verify_password, is_password_valid, validate_password_strength,
     create_access_token, set_auth_cookie, clear_auth_cookie,
-    get_token_from_cookie, decode_access_token, revoke_token,
+    get_token_from_cookie, decode_access_token, revoke_token,is_valid_email,
 )
 from app.auth.crypto import encrypt_pdf_password
 from app.core.rate_limiter import check_password_reset, check_verification_resend, check_login
@@ -122,7 +122,7 @@ async def register_submit(request: Request, db: Session = Depends(get_db)):
         errors["first_name"] = "Veuillez indiquer votre prénom (minimum 2 caractères)."
     if not email:
         errors["email"] = "Veuillez indiquer votre adresse email."
-    elif "@" not in email or "." not in email.split("@")[-1]:
+    elif not is_valid_email(email):
         errors["email"] = "Le format de votre adresse email est invalide."
     if not password:
         errors["password"] = "Veuillez définir un mot de passe."
@@ -316,6 +316,9 @@ async def login_submit(request: Request, db: Session = Depends(get_db)):
     errors = {}
     if not email:
         errors["email"] = "Veuillez indiquer votre adresse email."
+    elif not is_valid_email(email):
+        errors["email"] = "Le format de votre adresse email est invalide."
+
     if not password:
         errors["password"] = "Veuillez indiquer votre mot de passe."
     if errors:
