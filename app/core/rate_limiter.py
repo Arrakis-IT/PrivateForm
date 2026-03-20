@@ -72,6 +72,9 @@ verification_resend_limiter = RateLimiter()
 # Error alerts: maximum 10 per hour (global, not per IP)
 alert_limiter = RateLimiter()
 
+# Login attempts: per IP and per email (15-minute window)
+login_ip_limiter = RateLimiter()
+login_email_limiter = RateLimiter()
 
 def get_client_ip(request: Request) -> str:
     """Gets client's real IP, considering proxies."""
