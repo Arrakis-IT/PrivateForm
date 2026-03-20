@@ -28,7 +28,7 @@ from app.core.models import Doctor, VerificationToken, PasswordResetToken, MEDIC
 from app.auth.utils import (
     hash_password, verify_password, is_password_valid, validate_password_strength,
     create_access_token, set_auth_cookie, clear_auth_cookie,
-    get_token_from_cookie, decode_access_token,
+    get_token_from_cookie, decode_access_token, revoke_token,
 )
 from app.auth.crypto import encrypt_pdf_password
 from app.core.rate_limiter import check_password_reset, check_verification_resend, check_login
@@ -363,7 +363,10 @@ async def login_submit(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/logout")
 async def logout(request: Request):
+    token = get_token_from_cookie(request)
     response = RedirectResponse(url="/", status_code=302)
+    if token:
+        revoke_token(token)
     clear_auth_cookie(response)
     return response
 

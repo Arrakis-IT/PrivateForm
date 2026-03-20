@@ -21,6 +21,7 @@ from passlib.context import CryptContext
 from fastapi import Request, HTTPException
 from fastapi.responses import Response
 from app.core.settings import settings
+from app.auth.token_denylist import denylist
 
 # --- Hashing context (bcrypt) ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -59,6 +60,20 @@ def is_password_valid(password: str) -> bool:
     return all(checks.values())
 
 
+def decode_access_token(token: str) -> str | None:
+    """
+    Decodes a JWT and returns the doctor_id.
+    Returns None if token is invalid, expired, or has been revoked.
+    """
+    if denylist.is_denied(token):
+        return None
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        return payload.get("sub")
+    except JWTError:
+        return None
+
+
 # =============================================================================
 # JWT Tokens
 # =============================================================================
@@ -87,6 +102,19 @@ def decode_access_token(token: str) -> str | None:
         return payload.get("sub")
     except JWTError:
         return None
+    
+
+def revoke_token(token: str) -> None:
+    """
+    Adds a token to the denylist using its real expiry from the payload.
+    Called on logout to immediately invalidate the session.
+    """
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        exp = float(payload.get("exp", 0))
+        denylist.add(token, exp)
+    except JWTError:
+        pass  # Already invalid, nothing to revoke
 
 
 # =============================================================================
