@@ -349,8 +349,8 @@ async function submitForm() {
     // Get hCaptcha token
     let captchaToken = "";
     if (window.hcaptcha) {
-        try { captchaToken = hcaptcha.getToken(); }
-        catch(e) { /* not yet solved */ }
+        try { captchaToken = hcaptcha.getResponse(); }
+        catch(e) { captchaToken = ""; }
     }
 
     const payload = { answers, hcaptcha_token: captchaToken };
