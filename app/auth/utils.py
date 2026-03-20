@@ -26,6 +26,14 @@ from app.auth.token_denylist import denylist
 # --- Hashing context (bcrypt) ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Pre-computed dummy hash to prevent user enumeration via timing attacks.
+# verify_password() is always called, even when the email doesn't exist.
+_DUMMY_HASH = pwd_context.hash("dummy-that-never-matches-any-real-password")
+
+def get_dummy_hash() -> str:
+    """Returns a pre-computed dummy hash for timing-safe login checks."""
+    return _DUMMY_HASH
+
 # RFC 5322 practical subset — rejects the most common malformed inputs
 _EMAIL_REGEX = re.compile(
     r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$'

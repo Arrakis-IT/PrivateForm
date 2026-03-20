@@ -29,6 +29,7 @@ from app.auth.utils import (
     hash_password, verify_password, is_password_valid, validate_password_strength,
     create_access_token, set_auth_cookie, clear_auth_cookie,
     get_token_from_cookie, decode_access_token, revoke_token,is_valid_email,
+    get_dummy_hash,
 )
 from app.auth.crypto import encrypt_pdf_password
 from app.core.rate_limiter import check_password_reset, check_verification_resend, check_login
@@ -334,7 +335,13 @@ async def login_submit(request: Request, db: Session = Depends(get_db)):
         }, status_code=429)
 
     doctor = get_doctor_by_email(db, email)
-    if not doctor:
+
+    # Always run bcrypt regardless of whether the email exists.
+    # This prevents user enumeration via response timing differences.
+    hash_to_check = doctor.password_hash if doctor else get_dummy_hash()
+    password_ok = verify_password(password, hash_to_check)
+
+    if not doctor or not password_ok:
         return templates.TemplateResponse(request, "auth/login.html", {
             "errors": {"general": "Email ou mot de passe incorrect."},
             "form_data": {"email": email},
@@ -343,12 +350,6 @@ async def login_submit(request: Request, db: Session = Depends(get_db)):
     if not doctor.is_verified:
         return templates.TemplateResponse(request, "auth/login.html", {
             "errors": {"general": "Veuillez vérifier votre email avant de vous connecter."},
-            "form_data": {"email": email},
-        }, status_code=401)
-
-    if not verify_password(password, doctor.password_hash):
-        return templates.TemplateResponse(request, "auth/login.html", {
-            "errors": {"general": "Email ou mot de passe incorrect."},
             "form_data": {"email": email},
         }, status_code=401)
 
