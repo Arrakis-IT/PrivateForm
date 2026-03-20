@@ -16,7 +16,8 @@
 
 import re
 from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
+import jwt
+from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from fastapi import Request, HTTPException
 from fastapi.responses import Response
@@ -108,7 +109,7 @@ def decode_access_token(token: str) -> str | None:
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         return payload.get("sub")
-    except JWTError:
+    except InvalidTokenError:
         return None
     
 
@@ -121,7 +122,7 @@ def revoke_token(token: str) -> None:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         exp = float(payload.get("exp", 0))
         denylist.add(token, exp)
-    except JWTError:
+    except InvalidTokenError:
         pass  # Already invalid, nothing to revoke
 
 
