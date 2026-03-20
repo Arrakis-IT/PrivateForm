@@ -61,13 +61,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; "
-            "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+            "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://js.hcaptcha.com; "
+            "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://newassets.hcaptcha.com; "
             "font-src 'self' https://cdnjs.cloudflare.com; "
-            "img-src 'self' data:; "
+            "img-src 'self' data: https://newassets.hcaptcha.com; "
+            "frame-src https://newassets.hcaptcha.com; "
+            "connect-src 'self' https://hcaptcha.com https://newassets.hcaptcha.com; "
             "form-action 'self'; "
             "frame-ancestors 'none';"
         )
+
 
         return response
 
