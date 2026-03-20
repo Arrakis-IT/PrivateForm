@@ -104,6 +104,10 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+    
+    @property
+    def PDF_MASTER_KEY(self) -> str:
+        return read_secret("PDF_MASTER_KEY_FILE", "PDF_MASTER_KEY")
 
     @property
     def JWT_SECRET(self) -> str:

@@ -37,6 +37,7 @@ services:
       - brevo_api_key
       - hcaptcha_site_key
       - hcaptcha_secret_key
+      - pdf_master_key
     networks:
       - privateform_net
     restart: unless-stopped
@@ -131,3 +132,5 @@ secrets:
     file: ./secrets/hcaptcha_site_key.txt
   hcaptcha_secret_key:
     file: ./secrets/hcaptcha_secret_key.txt
+  pdf_master_key:
+    file: ./secrets/pdf_master_key.txt

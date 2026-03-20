@@ -29,6 +29,7 @@ from app.auth.utils import (
     is_password_valid, validate_password_strength,
     clear_auth_cookie,
 )
+from app.auth.crypto import encrypt_pdf_password
 from app.email.service import send_password_changed_email
 from app.core.logging import get_logger
 
@@ -226,8 +227,9 @@ async def change_pdf_password(
     if new_pdf_password != confirm_pdf_password:
         return JSONResponse({"success": False, "error": "Les mots de passe PDF ne correspondent pas."}, status_code=400)
 
-    # Apply (stored in plain text as per spec)
-    doctor.pdf_encryption_password = new_pdf_password
+    # Apply 
+    doctor.pdf_encryption_password = encrypt_pdf_password(new_pdf_password)
+
     db.commit()
 
     logger.info(f"PDF password changed for doctor {doctor_id}")

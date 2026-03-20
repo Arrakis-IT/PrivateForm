@@ -46,7 +46,7 @@ class Doctor(Base):
     id: str = Column(String, primary_key=True, default=generate_uuid)
     email: str = Column(String, unique=True, nullable=False, index=True)
     password_hash: str = Column(String, nullable=False)
-    pdf_encryption_password: str = Column(String, nullable=False)  # In plain text
+    pdf_encryption_password: str = Column(String, nullable=False)  # AES encrypted (Fernet)
     last_name: str = Column(String, nullable=False)                # Last name
     first_name: str = Column(String, nullable=False)               # First name
     specialty: str = Column(String, nullable=True)

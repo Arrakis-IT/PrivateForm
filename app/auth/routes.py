@@ -30,6 +30,7 @@ from app.auth.utils import (
     create_access_token, set_auth_cookie, clear_auth_cookie,
     get_token_from_cookie, decode_access_token,
 )
+from app.auth.crypto import encrypt_pdf_password
 from app.core.rate_limiter import check_password_reset, check_verification_resend
 from app.email.service import (
     send_verification_email, send_password_reset_email,
@@ -171,7 +172,7 @@ async def register_submit(request: Request, db: Session = Depends(get_db)):
     doctor = Doctor(
         email=email,
         password_hash=hash_password(password),
-        pdf_encryption_password=pdf_password,
+        pdf_encryption_password=encrypt_pdf_password(pdf_password),
         last_name=last_name,
         first_name=first_name,
         specialty=specialty if specialty else None,

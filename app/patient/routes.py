@@ -30,6 +30,7 @@ from app.core.rate_limiter import check_patient_submission
 from app.pdf.service import generate_and_encrypt_pdf, generate_pdf_filename
 from app.email.service import send_form_submission_email
 from app.core.logging import get_logger
+from app.auth.crypto import decrypt_pdf_password
 
 logger = get_logger("patient.routes")
 
@@ -298,7 +299,7 @@ async def patient_form_submit(request: Request, slug: str):
                 questions=[question_to_patient_dict(q) for q in questions],
                 answers=validated_answers,
                 submission_timestamp=submission_timestamp,
-                encryption_password=doctor.pdf_encryption_password,
+                encryption_password=decrypt_pdf_password(doctor.pdf_encryption_password),
             )
             pdf_filename = generate_pdf_filename(form.slug, now_lux)
 
