@@ -346,7 +346,7 @@ async def edit_form_submit(request: Request, form_id: str, db: Session = Depends
 
     errors = {}
 
-    # Validar nombre
+    # Validate name
     if not form_name or len(form_name) < 3:
         errors["form_name"] = "Le nom du formulaire doit contenir au moins 3 caractères."
     elif len(form_name) > 100:
@@ -381,7 +381,7 @@ async def edit_form_submit(request: Request, form_id: str, db: Session = Depends
     # Update form
     form.name = form_name
 
-    # Eliminar preguntas antiguas y crear nuevas
+    # Delete existing questions and recreate them (simpler than trying to diff)
     db.query(Question).filter(Question.form_id == form_id).delete()
 
     for i, q in enumerate(questions_data):
@@ -410,7 +410,7 @@ async def edit_form_submit(request: Request, form_id: str, db: Session = Depends
 
 
 # =============================================================================
-# Toggle activo/inactivo (AJAX)
+# Toggle active/inactive (AJAX)
 # =============================================================================
 
 @router.post("/form/{form_id}/toggle", response_class=JSONResponse)
@@ -428,7 +428,7 @@ async def toggle_form(form_id: str, request: Request, db: Session = Depends(get_
 
 
 # =============================================================================
-# Eliminar formulario
+# Delete form
 # =============================================================================
 
 @router.post("/form/{form_id}/delete", response_class=JSONResponse)
@@ -438,7 +438,7 @@ async def delete_form(form_id: str, request: Request, db: Session = Depends(get_
     if not form:
         return JSONResponse(content={"error": "Formulaire non trouvé"}, status_code=404)
 
-    # No se puede eliminar el formulario de ejemplo
+    # Example forms cannot be deleted (they are needed to always have at least one form)
     if form.is_example:
         return JSONResponse(
             content={"error": "Vous devez conserver au moins un formulaire."},
@@ -453,7 +453,7 @@ async def delete_form(form_id: str, request: Request, db: Session = Depends(get_
 
 
 # =============================================================================
-# Modal QR/URL (datos para el modal)
+# Modal QR/URL (modal)
 # =============================================================================
 
 @router.get("/form/{form_id}/share", response_class=JSONResponse)
@@ -475,7 +475,7 @@ async def get_share_data(form_id: str, db: Session = Depends(get_db),
 
 
 # =============================================================================
-# Descarga QR como PNG
+# Download QR as PNG
 # =============================================================================
 
 @router.get("/form/{form_id}/qr-download")
@@ -499,7 +499,7 @@ async def download_qr(form_id: str, db: Session = Depends(get_db),
     img.save(buffer, format="PNG")
     buffer.seek(0)
 
-    # Nombre de archivo: privateform_qr_[nombre-formulario].png
+    # Filename: privateform_qr_[form_name].png
     safe_name = "".join(c if c.isalnum() or c in ("-", "_", " ") else "" for c in form.name)
     filename = f"privateform_qr_{safe_name}.png"
 

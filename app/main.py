@@ -1,7 +1,7 @@
 # =============================================================================
 # PrivateForm - Main Application Entry Point
 # =============================================================================
-# Instancia de FastAPI, middlewares, routers y evento de inicio.
+# Instance of FastAPI, middlewares, routers and startup event.
 # =============================================================================
 
 from fastapi import FastAPI, Request

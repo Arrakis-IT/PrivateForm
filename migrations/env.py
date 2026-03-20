@@ -2,8 +2,8 @@
 # PrivateForm - Alembic env.py
 # =============================================================================
 # Migration environment configuration.
-# Importa los modelos para que Alembic pueda detectar cambios (autogenerate).
-# =============================================================================
+# Import the models so that Alembic can detect changes (autogenerate).
+# # =============================================================================
 
 import sys
 import os
@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from app.core.settings import settings
 from app.core.database import Base
 
-# Importar todos los modelos para autogenerate
+# Import all models for autogenerate
 from app.core import models  # noqa: F401
 
 # Logging configuration from alembic.ini
@@ -25,12 +25,12 @@ config = context.config
 if config.file_config:
     fileConfig(config.file_config, disable_existing_loggers=False)
 
-# URL de la base de datos desde settings
+# URL of the database from settings
 target_metadata = Base.metadata
 
 
 def get_database_url() -> str:
-    """Construye la URL de PostgreSQL desde las variables de entorno."""
+    """Constructs the PostgreSQL URL from environment variables."""
     return (
         f"postgresql://{settings.DB_USER}:{settings.DB_PASSWORD}"
         f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
@@ -38,7 +38,7 @@ def get_database_url() -> str:
 
 
 def run_migrations_offline():
-    """Ejecuta migraciones en modo offline (genera SQL sin conectar)."""
+    """Constructs the PostgreSQL URL from environment variables."""
     url = get_database_url()
     context.configure(
         url=url,
@@ -51,7 +51,7 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    """Ejecuta migraciones en modo online (conectado a la BD)."""
+    """Perform migrations in online mode (while connected to the database)."""
     connectable = create_engine(
         get_database_url(),
         poolclass=pool.NullPool,

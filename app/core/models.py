@@ -80,17 +80,17 @@ class Form(Base):
 
 
 # -----------------------------------------------------------------------------
-# Modelo: Question (pregunta de un formulario)
+# Model: Question (question on a form)
 # -----------------------------------------------------------------------------
 class Question(Base):
     __tablename__ = "questions"
 
     id: str = Column(String, primary_key=True, default=generate_uuid)
     form_id: str = Column(String, ForeignKey("forms.id"), nullable=False)
-    text: str = Column(Text, nullable=False)                        # Texto de la pregunta
-    question_type: str = Column(String, nullable=False)             # Tipo de respuesta
-    is_required: bool = Column(Boolean, default=True)               # Obligatoria por defecto
-    order: int = Column(Integer, nullable=False)                    # Orden en el formulario
+    text: str = Column(Text, nullable=False)                        # Question text
+    question_type: str = Column(String, nullable=False)             # Type of response
+    is_required: bool = Column(Boolean, default=True)               # Required by default
+    order: int = Column(Integer, nullable=False)                    # Order in the form
 
     # Conditional fields by type
     options: list = Column(JSON, nullable=True)                     # Select/Multiselect: list of options

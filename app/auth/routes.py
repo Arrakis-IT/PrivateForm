@@ -69,7 +69,7 @@ async def landing(request: Request):
 
 
 # =============================================================================
-# Registro
+# Register
 # =============================================================================
 
 @router.get("/register", response_class=HTMLResponse)

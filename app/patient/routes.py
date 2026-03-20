@@ -214,7 +214,7 @@ async def patient_form_submit(request: Request, slug: str):
                 "error": "Trop de soumissions. Veuillez réessayer plus tard."
             }, status_code=429)
 
-        # --- Verificar formulario ---
+        # --- Verify form ---
         form = get_form_by_slug(db, slug)
         if not form or not form.is_active:
             return JSONResponse({
@@ -222,7 +222,7 @@ async def patient_form_submit(request: Request, slug: str):
                 "error": "Ce formulaire n'est plus disponible."
             }, status_code=404)
 
-        # --- Parsear body ---
+        # --- Parse body ---
         try:
             body = await request.json()
         except Exception:
@@ -234,26 +234,26 @@ async def patient_form_submit(request: Request, slug: str):
         if len(body_str.encode("utf-8")) > MAX_SUBMISSION_SIZE_KB * 1024:
             return JSONResponse({"success": False, "error": "La soumission dépasse la taille maximale autorisée."}, status_code=400)
 
-        # --- Verificar hCaptcha ---
+        # --- Verify hCaptcha ---
         captcha_token = body.get("hcaptcha_token", "")
         if settings.HCAPTCHA_SECRET_KEY and settings.HCAPTCHA_SECRET_KEY != "your_hcaptcha_secret_key_here":
             captcha_valid = await _verify_hcaptcha(captcha_token)
             if not captcha_valid:
                 return JSONResponse({"success": False, "error": "Vérification de sécurité échouée."}, status_code=400)
 
-        # --- Obtener preguntas ordenadas ---
+        # --- Get sorted questions ---
         questions = sorted(form.questions, key=lambda q: q.order)
         answers_raw = body.get("answers", {})
 
-        # --- Validar respuestas ---
+        # --- Validate answers ---
         errors = []
-        validated_answers = []  # Lista de {question, answer} para el PDF
+        validated_answers = []  # List of {question, answer} for the PDF
 
         for q in questions:
             q_dict = question_to_patient_dict(q)
             raw_answer = answers_raw.get(q.id)
 
-            # Normalizar
+            # Normalize
             if q.question_type == "number" and isinstance(raw_answer, str):
                 raw_answer = raw_answer.replace(",", ".")
 
@@ -261,23 +261,23 @@ async def patient_form_submit(request: Request, slug: str):
             if error:
                 errors.append(error)
             else:
-                # Formatear respuesta para PDF
+                # Format answer for the PDF
                 display_answer = _format_answer_for_pdf(q.question_type, raw_answer, q_dict)
                 validated_answers.append({
                     "question_id": q.id,
                     "question_text": q.text,
                     "question_type": q.question_type,
-                    "value": display_answer,  # Cambiar "answer" por "value"
+                    "value": display_answer,  # Change "answer" to "value"
                 })
 
         if errors:
             return JSONResponse({"success": False, "errors": errors}, status_code=400)
 
-        # --- Generar timestamp ---
+        # --- Generate timestamp ---
         now_lux = datetime.now(LUX_TZ)
         submission_timestamp = now_lux.strftime("%d/%m/%Y à %H:%M (CET)")
 
-        # --- Generar y cifrar PDF ---
+        # --- Generate and encrypt PDF ---
         doctor = form.doctor
         doctor_name = f"{doctor.first_name} {doctor.last_name}"
 
@@ -319,13 +319,13 @@ async def patient_form_submit(request: Request, slug: str):
         # --- PDF destroyed (never saved to disk) ---
         del encrypted_pdf
 
-        # --- Incrementar contador ---
+        # --- Increment counter ---
         form.submission_count += 1
         db.commit()
 
         logger.info(f"Form {slug} submitted successfully. Total submissions: {form.submission_count}")
 
-        # --- Respuesta exitosa ---
+        # --- Successful response ---
         return JSONResponse({
             "success": True,
             "timestamp": submission_timestamp,
@@ -336,11 +336,11 @@ async def patient_form_submit(request: Request, slug: str):
 
 
 # =============================================================================
-# Helpers internos
+# Internal helpers
 # =============================================================================
 
 def _format_answer_for_pdf(question_type: str, answer, q_dict: dict) -> str:
-    """Formatea la respuesta para mostrarla en el PDF."""
+    """Format the answer for display in the PDF."""
     if answer is None:
         return "—"
 

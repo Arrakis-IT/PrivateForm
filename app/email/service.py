@@ -345,7 +345,7 @@ async def send_form_submission_email(
         🕐 <strong>Date d'envoi :</strong> {submission_timestamp}
     </div>
 
-    <p>Le PDF adjunto contient les réponses du patient. Il est protégé par
+    <p>Le PDF contient les réponses du patient. Il est protégé par
     votre <strong>mot de passe de chiffrement PDF</strong> configuré dans
     votre compte PrivateForm.</p>
 
@@ -396,7 +396,7 @@ async def send_critical_alert_email(
     # Build optional lines
     extra_info = ""
     if doctor_id:
-        extra_info += f"<br>👨‍⚕️ <strong>ID Médico:</strong> {doctor_id}"
+        extra_info += f"<br>👨‍⚕️ <strong>ID Médécin:</strong> {doctor_id}"
     if form_name:
         extra_info += f"<br>📋 <strong>Formulaire:</strong> {form_name}"
 

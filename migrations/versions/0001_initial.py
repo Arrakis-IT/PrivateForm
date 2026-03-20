@@ -1,7 +1,7 @@
 # =============================================================================
 # PrivateForm - Initial migration
 # =============================================================================
-# Crea todas las tablas: doctors, forms, questions,
+# Create all tables: doctors, forms, questions,
 # verification_tokens, password_reset_tokens.
 # =============================================================================
 
@@ -17,7 +17,7 @@ depends_on = None
 
 def upgrade() -> None:
     # -------------------------------------------------------------------------
-    # Tabla: doctors
+    # Table: doctors
     # -------------------------------------------------------------------------
     op.create_table(
         "doctors",
@@ -40,7 +40,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_doctors_email"), "doctors", ["email"], unique=True)
 
     # -------------------------------------------------------------------------
-    # Tabla: forms
+    # Table: forms
     # -------------------------------------------------------------------------
     op.create_table(
         "forms",
@@ -59,7 +59,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_forms_slug"), "forms", ["slug"], unique=True)
 
     # -------------------------------------------------------------------------
-    # Tabla: questions
+    # Table: questions
     # -------------------------------------------------------------------------
     op.create_table(
         "questions",
@@ -78,7 +78,7 @@ def upgrade() -> None:
     )
 
     # -------------------------------------------------------------------------
-    # Tabla: verification_tokens
+    # Table: verification_tokens
     # -------------------------------------------------------------------------
     op.create_table(
         "verification_tokens",
@@ -94,7 +94,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_verification_tokens_token"), "verification_tokens", ["token"], unique=True)
 
     # -------------------------------------------------------------------------
-    # Tabla: password_reset_tokens
+    # Table: password_reset_tokens
     # -------------------------------------------------------------------------
     op.create_table(
         "password_reset_tokens",

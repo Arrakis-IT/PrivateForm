@@ -66,19 +66,19 @@ class PrivateFormPDF(FPDF):
             self.ln(8)
 
             # Title: PrivateForm
-            self.set_font("Helvetica", "B", 20)
+            self.set_font("DejaVu", "B", 20)
             self.set_text_color(75, 143, 219)
             self.cell(0, 8, "PrivateForm", new_x="LMARGIN", new_y="NEXT", align="C")
 
             self.ln(4)
 
             # Doctor name
-            self.set_font("Helvetica", "", 11)
+            self.set_font("DejaVu", "", 11)
             self.set_text_color(100, 100, 100)
             self.cell(0, 6, f"Dr. {self.doctor_name}", new_x="LMARGIN", new_y="NEXT", align="C")
 
             # Form name
-            self.set_font("Helvetica", "B", 13)
+            self.set_font("DejaVu", "B", 13)
             self.set_text_color(31, 41, 55)
             self.cell(0, 7, self.form_name, new_x="LMARGIN", new_y="NEXT", align="C")
 
@@ -91,7 +91,7 @@ class PrivateFormPDF(FPDF):
             self.ln(5)
 
             # Timestamp
-            self.set_font("Helvetica", "I", 9)
+            self.set_font("DejaVu", "I", 9)
             self.set_text_color(107, 114, 128)
             self.cell(0, 5, f"Envoyé le : {self.submission_timestamp}", new_x="LMARGIN", new_y="NEXT", align="C")
 
@@ -102,11 +102,11 @@ class PrivateFormPDF(FPDF):
             self.rect(0, 0, self.w, 3, "F")
             self.ln(8)
 
-            self.set_font("Helvetica", "B", 10)
+            self.set_font("DejaVu", "B", 10)
             self.set_text_color(75, 143, 219)
             self.cell(0, 5, "PrivateForm", new_x="LMARGIN", new_y="NEXT", align="C")
 
-            self.set_font("Helvetica", "", 9)
+            self.set_font("DejaVu", "", 9)
             self.set_text_color(100, 100, 100)
             self.cell(0, 5, self.form_name, new_x="LMARGIN", new_y="NEXT", align="C")
 
@@ -129,7 +129,7 @@ class PrivateFormPDF(FPDF):
         self.ln(3)
 
         # Bilingual marketing text
-        self.set_font("Helvetica", "B", 8)
+        self.set_font("DejaVu", "B", 8)
         self.set_text_color(75, 143, 219)
 
         # French
@@ -139,14 +139,14 @@ class PrivateFormPDF(FPDF):
         self.ln(3)
 
         # Contact
-        self.set_font("Helvetica", "", 7)
+        self.set_font("DejaVu", "", 7)
         self.set_text_color(107, 114, 128)
         self.cell(0, 4,
                   f"{settings.CONTACT_EMAIL}  |  {settings.CONTACT_PHONE}  |  {settings.CONTACT_WEB}",
                   new_x="LMARGIN", new_y="NEXT", align="C")
 
         # Page
-        self.set_font("Helvetica", "I", 7)
+        self.set_font("DejaVu", "I", 7)
         self.set_text_color(156, 163, 175)
         self.cell(0, 4, f"Page {self.page_no()}", new_x="LMARGIN", new_y="NEXT", align="C")
 
@@ -240,7 +240,7 @@ def generate_pdf(
             pdf.rect(12, pdf.get_y(), pdf.w - 24, 18, "F")
 
         # Question number + text
-        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_font("DejaVu", "B", 10)
         pdf.set_text_color(31, 41, 55)
 
         obligatorio_text = " *" if is_required else ""
@@ -259,12 +259,12 @@ def generate_pdf(
             "phone": "Téléphone",
             "scale": "Échelle 1-10",
         }
-        pdf.set_font("Helvetica", "I", 8)
+        pdf.set_font("DejaVu", "I", 8)
         pdf.set_text_color(156, 163, 175)
         pdf.cell(0, 4, f"Type : {type_labels.get(question_type, question_type)}", new_x="LMARGIN", new_y="NEXT")
 
         # Answer
-        pdf.set_font("Helvetica", "", 10)
+        pdf.set_font("DejaVu", "", 10)
         pdf.set_text_color(55, 65, 81)
 
         if not answer_value and answer_value != 0:
