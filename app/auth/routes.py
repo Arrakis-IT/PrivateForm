@@ -509,13 +509,3 @@ async def confidentialite(request: Request):
     return templates.TemplateResponse(request, "base/confidentialite.html", {
         "current_date": "05/02/2026"
     })
-
-@router.get("/debug-ip")
-async def debug_ip(request: Request):
-    from app.core.rate_limiter import get_client_ip
-    return {
-        "resolved_ip": get_client_ip(request),
-        "X-Real-IP": request.headers.get("X-Real-IP"),
-        "X-Forwarded-For": request.headers.get("X-Forwarded-For"),
-        "client.host": request.client.host if request.client else None,
-    }
