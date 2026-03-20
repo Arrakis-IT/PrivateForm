@@ -76,11 +76,16 @@ alert_limiter = RateLimiter()
 login_ip_limiter = RateLimiter()
 login_email_limiter = RateLimiter()
 
+
 def get_client_ip(request: Request) -> str:
-    """Gets client's real IP, considering proxies."""
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    """
+    Gets client's real IP set by nginx from the TCP connection ($remote_addr).
+    X-Real-IP cannot be spoofed by the client — nginx overwrites it.
+    Falls back to direct connection IP for local development (no proxy).
+    """
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip.strip()
     return request.client.host if request.client else "unknown"
 
 
