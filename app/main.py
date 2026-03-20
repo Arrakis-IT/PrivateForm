@@ -21,6 +21,8 @@ from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
 from app.core.settings import settings
 from app.core.logging import get_logger
+from starlette.middleware.base import BaseHTTPMiddleware
+
 
 logger = get_logger("main")
 
@@ -40,6 +42,39 @@ async def lifespan(app: FastAPI):
 
 
 # -----------------------------------------------------------------------------
+# Middlewares
+# -----------------------------------------------------------------------------
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """
+    Adds HTTP security headers to every response.
+    Protects against clickjacking, MIME sniffing, XSS, and session hijacking.
+    CSP uses 'unsafe-inline' for scripts because templates use inline JS.
+    Removing 'unsafe-inline' requires migrating to nonce-based CSP (future work).
+    """
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=(), payment=()"
+        )
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "font-src 'self'; "
+            "form-action 'self'; "
+            "frame-ancestors 'none';"
+        )
+        return response
+
+
+# -----------------------------------------------------------------------------
 # App creation
 # -----------------------------------------------------------------------------
 app = FastAPI(
@@ -50,6 +85,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+# -----------------------------------------------------------------------------
+# Middleware registration
+# -----------------------------------------------------------------------------
+app.add_middleware(SecurityHeadersMiddleware)
 
 # -----------------------------------------------------------------------------
 # Static files

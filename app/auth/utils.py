@@ -136,7 +136,7 @@ def set_auth_cookie(response: Response, token: str) -> None:
         value=token,
         httponly=True,
         secure=True,                          # HTTPS only
-        samesite="lax",
+        samesite="strict",
         max_age=settings.JWT_EXPIRATION_MINUTES * 60,  # Same duration as JWT
         path="/",
     )
