@@ -54,13 +54,6 @@ def get_form_by_slug(db: Session, slug: str) -> Form | None:
     return db.query(Form).filter(Form.slug == slug).first()
 
 
-def get_client_ip(request: Request) -> str:
-    """Gets client's real IP (proxy compatible)."""
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
-
 
 def question_to_patient_dict(q: Question) -> dict:
     """Serializes question for patient template."""
