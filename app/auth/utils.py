@@ -60,20 +60,6 @@ def is_password_valid(password: str) -> bool:
     return all(checks.values())
 
 
-def decode_access_token(token: str) -> str | None:
-    """
-    Decodes a JWT and returns the doctor_id.
-    Returns None if token is invalid, expired, or has been revoked.
-    """
-    if denylist.is_denied(token):
-        return None
-    try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-        return payload.get("sub")
-    except JWTError:
-        return None
-
-
 # =============================================================================
 # JWT Tokens
 # =============================================================================
@@ -95,8 +81,10 @@ def create_access_token(doctor_id: str) -> str:
 def decode_access_token(token: str) -> str | None:
     """
     Decodes a JWT and returns the doctor_id.
-    Returns None if token is invalid or has expired.
+    Returns None if token is invalid, expired, or has been revoked.
     """
+    if denylist.is_denied(token):
+        return None
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         return payload.get("sub")

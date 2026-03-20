@@ -6,6 +6,7 @@
 .env
 .env.local
 .env.production
+CLAUDE.md
 
 # Python
 __pycache__/
