@@ -81,8 +81,6 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------------------
     # Limits
     # -----------------------------------------------------------------------
-    DEFAULT_FORM_LIMIT: int = 5
-    MAX_QUESTIONS_PER_FORM: int = 10
     MAX_OPTIONS_PER_QUESTION: int = 10
     MAX_LONG_TEXT_CHARS: int = 5000
     MAX_SUBMISSION_SIZE_KB: int = 1024

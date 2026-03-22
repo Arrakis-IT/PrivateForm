@@ -205,7 +205,7 @@ async def new_form_page(request: Request, db: Session = Depends(get_db),
         "question_errors": {},
         "is_new": True,
         "question_types": VALID_QUESTION_TYPES,
-        "max_questions": settings.MAX_QUESTIONS_PER_FORM,
+        "max_questions": doctor.question_limit,
         "max_options": settings.MAX_OPTIONS_PER_QUESTION,
         "max_long_text": settings.MAX_LONG_TEXT_CHARS,
     })
@@ -331,7 +331,7 @@ async def edit_form_page(request: Request, form_id: str, db: Session = Depends(g
         "question_errors": {},
         "is_new": False,
         "question_types": VALID_QUESTION_TYPES,
-        "max_questions": settings.MAX_QUESTIONS_PER_FORM,
+        "max_questions": doctor.question_limit,
         "max_options": settings.MAX_OPTIONS_PER_QUESTION,
         "max_long_text": settings.MAX_LONG_TEXT_CHARS,
     })
