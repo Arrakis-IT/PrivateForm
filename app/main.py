@@ -15,7 +15,7 @@
 # See LICENSE file for full terms.
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
@@ -108,6 +108,33 @@ app.include_router(auth_router)
 app.include_router(forms_router, prefix="/doctor")
 app.include_router(users_router, prefix="/doctor")
 app.include_router(patient_router)
+
+
+# -----------------------------------------------------------------------------
+# SEO — robots.txt & sitemap.xml
+# -----------------------------------------------------------------------------
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt():
+    content = (
+        "User-agent: *\n"
+        "Disallow: /doctor/\n"
+        "Disallow: /f/\n"
+        "\n"
+        f"Sitemap: https://{settings.APP_DOMAIN}/sitemap.xml\n"
+    )
+    return PlainTextResponse(content)
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap_xml():
+    base = f"https://{settings.APP_DOMAIN}"
+    content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>{base}/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
+  <url><loc>{base}/login</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>{base}/register</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+</urlset>"""
+    return PlainTextResponse(content, media_type="application/xml")
 
 
 # -----------------------------------------------------------------------------
