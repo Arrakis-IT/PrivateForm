@@ -195,12 +195,12 @@
                     <svg id="help-3-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div id="help-3" class="px-5 pb-4 text-sm text-gray-600 space-y-2" style="display:none;">
-                    <p>En bas del editor tienes dos botones:</p>
+                    <p>En bas de l'éditeur, tu trouveras deux boutons :</p>
                     <ul class="list-disc pl-4 space-y-1">
-                        <li><strong>Enregistrer</strong> — guarda los cambios y se queda en el editor.</li>
-                        <li><strong>Enregistrer et retourner</strong> — guarda y vuelve a esta lista.</li>
+                        <li><strong>Enregistrer</strong> — sauvegarde les modifications et reste dans l'éditeur.</li>
+                        <li><strong>Enregistrer et retourner</strong> — sauvegarde et revient à cette liste.</li>
                     </ul>
-                    <p>Para editar un formulario ya creado, haz clic en el icono de <strong>lápiz ✏️</strong> en la lista. Si el formulario estaba activo, se desactivará automáticamente al guardar para evitar inconsistencias.</p>
+                    <p>Pour modifier un formulaire existant, clique sur l'icône <strong>crayon ✏️</strong> dans la liste. Si le formulaire était actif, il sera automatiquement désactivé lors de la sauvegarde afin d'éviter toute incohérence.</p>
                 </div>
             </div>
 
@@ -211,28 +211,28 @@
                     <svg id="help-4-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div id="help-4" class="px-5 pb-4 text-sm text-gray-600 space-y-2" style="display:none;">
-                    <p>El <strong>interruptor</strong> de cada formulario controla si está accesible para los pacientes:</p>
+                    <p>L'<strong>interrupteur</strong> de chaque formulaire contrôle s'il est accessible aux patients :</p>
                     <ul class="list-disc pl-4 space-y-1">
-                        <li><span class="text-green-600 font-medium">Actif</span> — el formulario es accesible. Cualquier paciente con el enlace puede abrirlo y enviarlo.</li>
-                        <li><span class="text-gray-500 font-medium">Inactif</span> — el formulario está bloqueado. El paciente verá un mensaje de que no está disponible.</li>
+                        <li><span class="text-green-600 font-medium">Actif</span> — le formulaire est accessible. Tout patient disposant du lien peut l'ouvrir et l'envoyer.</li>
+                        <li><span class="text-gray-500 font-medium">Inactif</span> — le formulaire est bloqué. Le patient verra un message indiquant qu'il n'est pas disponible.</li>
                     </ul>
-                    <p>Activa el formulario solo cuando esté listo para recibir respuestas.</p>
+                    <p>Active le formulaire uniquement lorsqu'il est prêt à recevoir des réponses.</p>
                 </div>
             </div>
 
             <!-- Section 5 -->
             <div>
                 <button onclick="toggleSection('help-5')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
-                    <span class="text-sm font-semibold text-gray-700">Compartir el formulario con pacientes</span>
+                    <span class="text-sm font-semibold text-gray-700">Partager le formulaire avec les patients</span>
                     <svg id="help-5-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div id="help-5" class="px-5 pb-4 text-sm text-gray-600 space-y-2" style="display:none;">
-                    <p>Haz clic en el icono de <strong>compartir 🔗</strong> para obtener el enlace y el código QR del formulario.</p>
+                    <p>Clique sur l'icône de <strong>partage 🔗</strong> pour obtenir le lien et le QR code du formulaire.</p>
                     <ul class="list-disc pl-4 space-y-1">
-                        <li><strong>Copiar URL</strong> — pega el enlace en un email, SMS o web.</li>
-                        <li><strong>Descargar QR</strong> — imprime el código QR y colócalo en la sala de espera. El paciente lo escanea con su móvil y accede al formulario directamente.</li>
+                        <li><strong>Copier l'URL</strong> — colle le lien dans un email, un SMS ou sur ton site.</li>
+                        <li><strong>Télécharger le QR</strong> — imprime le QR code et affiche-le en salle d'attente. Le patient le scanne avec son téléphone et accède directement au formulaire.</li>
                     </ul>
-                    <p>⚠️ Cualquier persona con ese enlace o QR puede acceder al formulario si está <strong>activo</strong>. Desactívalo cuando no quieras recibir más respuestas.</p>
+                    <p>⚠️ Toute personne disposant de ce lien ou de ce QR peut accéder au formulaire s'il est <strong>actif</strong>. Désactive-le lorsque tu ne souhaites plus recevoir de réponses.</p>
                 </div>
             </div>
 
@@ -299,12 +299,19 @@ function toggleSection(id) {
     icon.style.transform = isOpen ? "" : "rotate(180deg)";
 }
 
-// On load: open panel by default first time, respect preference afterwards
+// On load: open panel + all sections first time, respect preference afterwards
 (function() {
     const pref = localStorage.getItem(HELP_KEY);
     if (pref === null || pref === "1") {
         document.getElementById("help-panel").style.display = "block";
         document.getElementById("help-toggle-label").textContent = "Masquer l'aide";
+        if (pref === null) {
+            // First visit: expand all sections
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`help-${i}`).style.display = "block";
+                document.getElementById(`help-${i}-icon`).style.transform = "rotate(180deg)";
+            }
+        }
     }
 })();
 </script>
