@@ -27,6 +27,14 @@ logger = get_logger("email")
 BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
+def _obfuscate_email(email: str) -> str:
+    """Returns u***@domain.com to avoid logging personal data."""
+    if "@" not in email:
+        return "***"
+    local, domain = email.split("@", 1)
+    return f"{local[0]}***@{domain}"
+
+
 async def _send_email(
     to_email: str,
     to_name: str,
@@ -68,10 +76,10 @@ async def _send_email(
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(BREVO_API_URL, json=payload, headers=headers)
             response.raise_for_status()
-            logger.info(f"Email sent successfully to {to_email}: {subject}")
+            logger.info(f"Email sent successfully to {_obfuscate_email(to_email)}: {subject}")
             return True
     except Exception as e:
-        logger.error(f"Error sending email to {to_email}: {e}")
+        logger.error(f"Error sending email to {_obfuscate_email(to_email)}: {e}")
         return False
 
 # =============================================================================
