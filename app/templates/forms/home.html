@@ -299,6 +299,15 @@ function toggleSection(id) {
     icon.style.transform = isOpen ? "" : "rotate(180deg)";
 }
 
+// On load: show notice toast if redirected from editor with ?notice=deactivated
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("notice") === "deactivated") {
+        showToast("Formulaire enregistré et désactivé. Réactivez-le quand il est prêt.", "warning");
+        history.replaceState(null, "", window.location.pathname);
+    }
+})();
+
 // On load: open panel + all sections first time, respect preference afterwards
 (function() {
     const pref = localStorage.getItem(HELP_KEY);

@@ -482,15 +482,20 @@ async function submitForm(andReturn) {
         if (res.ok) {
             const data = await res.json();
             isDirty = false;
+            hideSpinner();
+            if (andReturn) {
+                const dest = data.was_deactivated
+                    ? "/doctor/home?notice=deactivated"
+                    : "/doctor/home";
+                window.location.href = dest;
+                return;
+            }
             if (data.was_deactivated) {
                 showToast("Formulaire enregistré et désactivé. Réactivez-le quand il est prêt.", "warning");
             } else {
                 showToast("Formulaire enregistré.", "success");
             }
-            hideSpinner();
-            if (andReturn) {
-                window.location.href = "/doctor/home";
-            } else if (IS_NEW && data.form_id) {
+            if (IS_NEW && data.form_id) {
                 // Redirect to edit URL for the newly created form
                 window.location.href = `/doctor/form/${data.form_id}/edit`;
             }
