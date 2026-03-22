@@ -162,8 +162,7 @@
     {% endif %}
 
     <!-- Add question panel -->
-    {% if questions|length < max_questions|int %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 border-dashed p-5">
+    <div id="add-question-panel" class="bg-white rounded-xl shadow-sm border border-gray-200 border-dashed p-5" {% if questions|length >= max_questions|int %}style="display:none;"{% endif %}>
         <h3 class="text-sm font-semibold text-gray-600 mb-4">+ Ajouter une nouvelle question</h3>
 
         <div class="space-y-3">
@@ -237,11 +236,9 @@
             </button>
         </div>
     </div>
-    {% else %}
-    <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded-lg px-4 py-3 text-center">
+    <div id="question-limit-banner" class="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded-lg px-4 py-3 text-center" {% if questions|length < max_questions|int %}style="display:none;"{% endif %}>
         Limite atteinte : {{ max_questions }} questions maximum par formulaire.
     </div>
-    {% endif %}
 
     <!-- Bottom save buttons (centered) -->
     <div class="flex justify-center gap-3 mt-8">
@@ -314,6 +311,14 @@ function deleteQuestion(btn) {
     if (!confirm("Supprimer cette question ?")) return;
     markDirty();
     btn.closest(".question-card").remove();
+    updateAddPanel();
+}
+
+function updateAddPanel() {
+    const count = document.querySelectorAll(".question-card").length;
+    const atLimit = count >= MAX_QUESTIONS;
+    document.getElementById("add-question-panel").style.display = atLimit ? "none" : "block";
+    document.getElementById("question-limit-banner").style.display = atLimit ? "block" : "none";
 }
 
 // --------------------------------------------------------------------------
@@ -426,6 +431,7 @@ function addQuestion() {
 
     document.getElementById("questions-list").appendChild(card);
     markDirty();
+    updateAddPanel();
 
     // Reset new question form
     document.getElementById("new-q-text").value = "";
