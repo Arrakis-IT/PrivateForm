@@ -463,8 +463,7 @@ async def reset_password_page(request: Request, db: Session = Depends(get_db)):
 async def reset_password_submit(request: Request, db: Session = Depends(get_db)):
     form_data = await request.form()
     token = form_data.get("token") or ""
-    new_password = form_data.get("new_password") or ""
-    new_password_confirm = form_data.get("new_password_confirm") or ""
+    new_password = form_data.get("password") or ""
 
     rt = db.query(PasswordResetToken).filter(
         PasswordResetToken.token == token, PasswordResetToken.is_used == False
@@ -478,11 +477,9 @@ async def reset_password_submit(request: Request, db: Session = Depends(get_db))
 
     errors = {}
     if not new_password:
-        errors["new_password"] = "Veuillez définir un nouveau mot de passe."
+        errors["password"] = "Veuillez définir un nouveau mot de passe."
     elif not is_password_valid(new_password):
-        errors["new_password"] = "Le mot de passe ne respecte pas les critères de sécurité."
-    elif new_password != new_password_confirm:
-        errors["new_password"] = "Les deux mots de passe ne correspondent pas."
+        errors["password"] = "Le mot de passe ne respecte pas les critères de sécurité."
 
     if errors:
         return templates.TemplateResponse(request, "auth/reset_password.html", {
