@@ -208,12 +208,12 @@
 {% block extra_scripts %}
 <script>
 // Determine initial step from server-side errors
-{% if errors.last_name or errors.first_name or errors.email or errors.password or errors.specialty %}
-let currentStep = 1;
-{% elif errors.pdf_password %}
+{% if errors.pdf_password %}
 let currentStep = 2;
-{% else %}
+{% elif errors.phone or errors.country or errors.terms_accepted or errors.general %}
 let currentStep = 3;
+{% else %}
+let currentStep = 1;
 {% endif %}
 
 function updateProgress(step) {
