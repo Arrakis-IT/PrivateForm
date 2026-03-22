@@ -54,7 +54,8 @@ class Doctor(Base):
     country: str = Column(String, nullable=True)
     newsletter: bool = Column(Boolean, default=False)
     is_verified: bool = Column(Boolean, default=False)
-    form_limit: int = Column(Integer, default=10)                  # Configurable per doctor
+    form_limit: int = Column(Integer, default=5)                   # Configurable per doctor
+    question_limit: int = Column(Integer, default=10)              # Max questions per form, configurable per doctor
 
     # Timestamps
     created_at: datetime = Column(DateTime(timezone=True), server_default=func.now())

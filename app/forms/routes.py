@@ -252,8 +252,8 @@ async def new_form_submit(request: Request, db: Session = Depends(get_db),
         errors["questions"] = "Le formulaire doit contenir au moins une question."
 
     # Verify maximum questions
-    if len(questions_data) > settings.MAX_QUESTIONS_PER_FORM:
-        errors["questions"] = f"Maximum {settings.MAX_QUESTIONS_PER_FORM} questions autorisées."
+    if len(questions_data) > doctor.question_limit:
+        errors["questions"] = f"Maximum {doctor.question_limit} questions autorisées."
 
     # Validate questions
     question_errors = validate_questions(questions_data)
@@ -373,8 +373,8 @@ async def edit_form_submit(request: Request, form_id: str, db: Session = Depends
 
     if not questions_data:
         errors["questions"] = "Le formulaire doit contenir au moins une question."
-    if len(questions_data) > settings.MAX_QUESTIONS_PER_FORM:
-        errors["questions"] = f"Maximum {settings.MAX_QUESTIONS_PER_FORM} questions autorisées."
+    if len(questions_data) > doctor.question_limit:
+        errors["questions"] = f"Maximum {doctor.question_limit} questions autorisées."
 
     question_errors = validate_questions(questions_data)
 
