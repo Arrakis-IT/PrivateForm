@@ -90,7 +90,8 @@
                         {% if errors.specialty %}<p class="text-red-500 text-xs mt-1">{{ errors.specialty }}</p>{% endif %}
                     </div>
 
-                    <button type="button" onclick="goToStep(2)" class="btn-primary w-full py-2.5 rounded-lg font-semibold text-sm">
+                    <button type="button" onclick="goToStep(2)" id="btn-step1" disabled
+                            class="btn-primary w-full py-2.5 rounded-lg font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                         Continuer →
                     </button>
                 </div>
@@ -141,7 +142,8 @@
 
                     <div class="flex gap-3">
                         <button type="button" onclick="goToStep(1)" class="btn-outline flex-1 py-2.5 rounded-lg font-medium text-sm">← Retour</button>
-                        <button type="button" onclick="goToStep(3)" class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm">Continuer →</button>
+                        <button type="button" onclick="goToStep(3)" id="btn-step2" disabled
+                                class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed">Continuer →</button>
                     </div>
                 </div>
 
@@ -195,7 +197,7 @@
 
                     <div class="flex gap-3">
                         <button type="button" onclick="goToStep(2)" class="btn-outline flex-1 py-2.5 rounded-lg font-medium text-sm">← Retour</button>
-                        <button type="submit" class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm">Créer mon compte</button>
+                        <button type="button" onclick="submitForm()" class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm">Créer mon compte</button>
                     </div>
                 </div>
 
@@ -295,6 +297,24 @@ function validateStep2() {
     return true;
 }
 
+function validateStep3() {
+    const phone   = document.querySelector('[name=phone]').value.trim();
+    const country = document.querySelector('[name=country]').value;
+    const terms   = document.getElementById('cgu-check').checked;
+
+    if (phone && !phone.startsWith('+')) {
+        alert("Le format du téléphone doit inclure l'indicatif (ex: +352...)."); return false;
+    }
+    if (!country) { alert("Veuillez sélectionner votre pays."); return false; }
+    if (!terms)   { alert("Vous devez accepter les CGU et la politique de confidentialité."); return false; }
+    return true;
+}
+
+function submitForm() {
+    if (!validateStep3()) return;
+    document.getElementById('register-form').submit();
+}
+
 function goToStep(step) {
     if (step > currentStep) {
         if (currentStep === 1 && !validateStep1()) return;
@@ -309,6 +329,31 @@ for (let i = 1; i <= 3; i++) {
     document.getElementById(`step-${i}`).style.display = (i === currentStep) ? "block" : "none";
 }
 
+// Enable/disable step buttons based on field validity
+function checkStep1() {
+    const last  = document.querySelector('[name=last_name]').value.trim();
+    const first = document.querySelector('[name=first_name]').value.trim();
+    const email = document.querySelector('[name=email]').value.trim();
+    const pw    = document.getElementById('password-input').value;
+    const spec  = document.querySelector('[name=specialty]').value;
+    const valid = last.length >= 2 && first.length >= 2 && email.includes('@') && spec &&
+                  pw.length >= 8 && /[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[0-9]/.test(pw);
+    document.getElementById('btn-step1').disabled = !valid;
+}
+
+function checkStep2() {
+    const pdf   = document.getElementById('pdf-password-input').value;
+    const login = document.getElementById('password-input').value;
+    const valid = pdf.length >= 8 && /[A-Z]/.test(pdf) && /[a-z]/.test(pdf) && /[0-9]/.test(pdf) && pdf !== login;
+    document.getElementById('btn-step2').disabled = !valid;
+}
+
+['last_name', 'first_name', 'email', 'specialty'].forEach(name => {
+    const el = document.querySelector(`[name=${name}]`);
+    if (el) el.addEventListener('input', checkStep1);
+    if (el && el.tagName === 'SELECT') el.addEventListener('change', checkStep1);
+});
+
 // Live checklist — login password
 document.getElementById("password-input").addEventListener("input", function() {
     const v = this.value;
@@ -318,6 +363,8 @@ document.getElementById("password-input").addEventListener("input", function() {
     toggleCheck("check-number", /[0-9]/.test(v));
     const pdf = document.getElementById('pdf-password-input').value;
     if (pdf) toggleCheck("pdf-check-different", pdf !== v);
+    checkStep1();
+    checkStep2();
 });
 
 // Live checklist — PDF password
@@ -329,6 +376,7 @@ document.getElementById("pdf-password-input").addEventListener("input", function
     toggleCheck("pdf-check-lower",     /[a-z]/.test(v));
     toggleCheck("pdf-check-number",    /[0-9]/.test(v));
     toggleCheck("pdf-check-different", v.length > 0 && v !== login);
+    checkStep2();
 });
 
 function toggleCheck(id, ok) {
