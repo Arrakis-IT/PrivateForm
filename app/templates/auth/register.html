@@ -7,179 +7,199 @@
     <div class="w-full max-w-xl">
 
         <!-- Header -->
-        <div class="text-center mb-8">
+        <div class="text-center mb-6">
             <img src="/static/img/logo.png" alt="PrivateForm" class="h-14 mx-auto mb-3">
             <h1 class="text-2xl font-bold text-gray-800">Créer un compte</h1>
             <p class="text-gray-500 text-sm mt-1">Déjà un compte ? <a href="/login" class="text-blue-600 hover:underline">Se connecter</a></p>
         </div>
 
+        <!-- Progress indicator -->
+        <div class="flex items-center justify-center mb-6">
+            <div class="flex items-center gap-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300" id="dot-1">1</div>
+                <div class="w-12 h-0.5 transition-all duration-300" id="line-1"></div>
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300" id="dot-2">2</div>
+                <div class="w-12 h-0.5 transition-all duration-300" id="line-2"></div>
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300" id="dot-3">3</div>
+            </div>
+        </div>
+
         <!-- Form -->
-        <form method="POST" action="/register" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-5">
+        <form method="POST" action="/register" id="register-form">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6" id="step-container" style="overflow: hidden;">
 
-            <!-- Nom + Prénom (row) -->
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nom <span class="text-red-500">*</span></label>
-                    <input type="text" name="last_name" value="{{ form_data.last_name or '' }}" required
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
-                    {% if errors.last_name %}
-                    <p class="text-red-500 text-xs mt-1">{{ errors.last_name }}</p>
-                    {% endif %}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Prénom <span class="text-red-500">*</span></label>
-                    <input type="text" name="first_name" value="{{ form_data.first_name or '' }}" required
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
-                    {% if errors.first_name %}
-                    <p class="text-red-500 text-xs mt-1">{{ errors.first_name }}</p>
-                    {% endif %}
-                </div>
-            </div>
+                <!-- ===================== STEP 1 — Identité ===================== -->
+                <div class="step space-y-5" id="step-1">
+                    <h2 class="text-base font-semibold text-gray-700">Vos informations</h2>
 
-            <!-- Email -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
-                <input type="email" name="email" value="{{ form_data.email or '' }}" required
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
-                {% if errors.email %}
-                <p class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Mot de passe -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe <span class="text-red-500">*</span></label>
-                <input type="password" name="password" id="password-input"
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
-                {% if errors.password %}
-                <p class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
-                {% endif %}
-
-                <!-- Checklist -->
-                <div class="mt-2 space-y-1 pl-1">
-                    <div class="pw-check {% if password_checks.min_length %}ok{% endif %}" id="check-length">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M{% if password_checks.min_length %}16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z{% else %}10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z{% endif %}" clip-rule="evenodd"/></svg>
-                        Au moins 8 caractères
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nom <span class="text-red-500">*</span></label>
+                            <input type="text" name="last_name" value="{{ form_data.last_name or '' }}" placeholder="Dupont"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                            {% if errors.last_name %}<p class="text-red-500 text-xs mt-1">{{ errors.last_name }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Prénom <span class="text-red-500">*</span></label>
+                            <input type="text" name="first_name" value="{{ form_data.first_name or '' }}" placeholder="Marie"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                            {% if errors.first_name %}<p class="text-red-500 text-xs mt-1">{{ errors.first_name }}</p>{% endif %}
+                        </div>
                     </div>
-                    <div class="pw-check {% if password_checks.has_uppercase %}ok{% endif %}" id="check-upper">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M{% if password_checks.has_uppercase %}16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z{% else %}10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z{% endif %}" clip-rule="evenodd"/></svg>
-                        Une lettre majuscule
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
+                        <input type="email" name="email" value="{{ form_data.email or '' }}" placeholder="docteur@exemple.com"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                        {% if errors.email %}<p class="text-red-500 text-xs mt-1">{{ errors.email }}</p>{% endif %}
                     </div>
-                    <div class="pw-check {% if password_checks.has_lowercase %}ok{% endif %}" id="check-lower">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M{% if password_checks.has_lowercase %}16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z{% else %}10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z{% endif %}" clip-rule="evenodd"/></svg>
-                        Une lettre minuscule
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe <span class="text-red-500">*</span></label>
+                        <input type="password" name="password" id="password-input" placeholder="Ex: MonCompte2024!"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                        {% if errors.password %}<p class="text-red-500 text-xs mt-1">{{ errors.password }}</p>{% endif %}
+                        <div class="mt-2 space-y-1 pl-1">
+                            <div class="pw-check {% if password_checks.min_length %}ok{% endif %}" id="check-length">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M{% if password_checks.min_length %}16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z{% else %}10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z{% endif %}" clip-rule="evenodd"/></svg>
+                                Au moins 8 caractères
+                            </div>
+                            <div class="pw-check {% if password_checks.has_uppercase %}ok{% endif %}" id="check-upper">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M{% if password_checks.has_uppercase %}16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z{% else %}10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z{% endif %}" clip-rule="evenodd"/></svg>
+                                Une lettre majuscule
+                            </div>
+                            <div class="pw-check {% if password_checks.has_lowercase %}ok{% endif %}" id="check-lower">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M{% if password_checks.has_lowercase %}16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z{% else %}10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z{% endif %}" clip-rule="evenodd"/></svg>
+                                Une lettre minuscule
+                            </div>
+                            <div class="pw-check {% if password_checks.has_number %}ok{% endif %}" id="check-number">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M{% if password_checks.has_number %}16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z{% else %}10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z{% endif %}" clip-rule="evenodd"/></svg>
+                                Un chiffre
+                            </div>
+                        </div>
                     </div>
-                    <div class="pw-check {% if password_checks.has_number %}ok{% endif %}" id="check-number">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M{% if password_checks.has_number %}16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z{% else %}10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z{% endif %}" clip-rule="evenodd"/></svg>
-                        Un chiffre
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Spécialité <span class="text-red-500">*</span></label>
+                        <select name="specialty" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
+                            <option value="">— Choisir une spécialité —</option>
+                            {% for spec in specialties %}
+                            <option value="{{ spec }}" {% if form_data.specialty == spec %}selected{% endif %}>{{ spec }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if errors.specialty %}<p class="text-red-500 text-xs mt-1">{{ errors.specialty }}</p>{% endif %}
+                    </div>
+
+                    <button type="button" onclick="goToStep(2)" class="btn-primary w-full py-2.5 rounded-lg font-semibold text-sm">
+                        Continuer →
+                    </button>
+                </div>
+
+                <!-- ===================== STEP 2 — Mot de passe PDF ===================== -->
+                <div class="step space-y-5" id="step-2" style="display:none;">
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a1 1 0 00-1-1H7a1 1 0 00-1 1v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            <p class="text-sm text-blue-700">
+                                <strong>Chiffrement des PDFs</strong><br>
+                                Les formulaires complétés par vos patients vous seront envoyés par email sous forme de PDF chiffré. Seules les personnes disposant de ce mot de passe de chiffrement (vous, vos collaborateurs) pourront les ouvrir.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe de chiffrement PDF <span class="text-red-500">*</span></label>
+                        <input type="password" name="pdf_password" id="pdf-password-input" placeholder="Ex: MonPDF2024!"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                        {% if errors.pdf_password %}<p class="text-red-500 text-xs mt-1">{{ errors.pdf_password }}</p>{% endif %}
+                        <div class="mt-2 space-y-1 pl-1">
+                            <div class="pw-check" id="pdf-check-length">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z" clip-rule="evenodd"/></svg>
+                                Au moins 8 caractères
+                            </div>
+                            <div class="pw-check" id="pdf-check-upper">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z" clip-rule="evenodd"/></svg>
+                                Une lettre majuscule
+                            </div>
+                            <div class="pw-check" id="pdf-check-lower">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z" clip-rule="evenodd"/></svg>
+                                Une lettre minuscule
+                            </div>
+                            <div class="pw-check" id="pdf-check-number">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z" clip-rule="evenodd"/></svg>
+                                Un chiffre
+                            </div>
+                            <div class="pw-check" id="pdf-check-different">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a7 7 0 100 14A7 7 0 0010 3zm0 2a5 5 0 110 10A5 5 0 0110 5z" clip-rule="evenodd"/></svg>
+                                Différent du mot de passe de connexion
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="button" onclick="goToStep(1)" class="btn-outline flex-1 py-2.5 rounded-lg font-medium text-sm">← Retour</button>
+                        <button type="button" onclick="goToStep(3)" class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm">Continuer →</button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Confirmer mot de passe -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe <span class="text-red-500">*</span></label>
-                <input type="password" name="password_confirm"
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
-                {% if errors.password_confirm %}
-                <p class="text-red-500 text-xs mt-1">{{ errors.password_confirm }}</p>
-                {% endif %}
-            </div>
+                <!-- ===================== STEP 3 — Finaliser ===================== -->
+                <div class="step space-y-5" id="step-3" style="display:none;">
+                    <h2 class="text-base font-semibold text-gray-700">Finaliser votre inscription</h2>
 
-            <!-- Mot de passe chiffrement PDF -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
-                <div class="flex items-start gap-2">
-                    <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16v-6a1 1 0 00-1-1h-.01M12 11V9m0 8v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <p class="text-sm text-blue-700">
-                        <strong>Mot de passe de chiffrement PDF</strong> — Les réponses des patients seront chiffrées avec ce mot de passe. Vous aurez besoin de ce mot de passe pour ouvrir les PDFs reçus.
-                    </p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe PDF <span class="text-red-500">*</span></label>
-                    <input type="password" name="pdf_password"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
-                    {% if errors.pdf_password %}
-                    <p class="text-red-500 text-xs mt-1">{{ errors.pdf_password }}</p>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone <span class="text-gray-400">(optionnel)</span></label>
+                        <input type="text" name="phone" value="{{ form_data.phone or '' }}" placeholder="+352 ..."
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
+                        {% if errors.phone %}<p class="text-red-500 text-xs mt-1">{{ errors.phone }}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pays / Région <span class="text-red-500">*</span></label>
+                        <select name="country" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
+                            <option value="">— Choisir un pays —</option>
+                            {% for country_name, _ in countries %}
+                            <option value="{{ country_name }}" {% if form_data.country == country_name %}selected{% endif %}>{{ country_name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if errors.country %}<p class="text-red-500 text-xs mt-1">{{ errors.country }}</p>{% endif %}
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" name="newsletter" id="newsletter-check"
+                               {% if form_data.newsletter %}checked{% endif %}
+                               class="w-4 h-4 text-blue-600 rounded">
+                        <label for="newsletter-check" class="text-sm text-gray-600">
+                            Je souhaite recevoir les informations sur PrivateForm <span class="text-gray-400">(optionnel)</span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" name="terms_accepted" id="cgu-check"
+                               class="w-4 h-4 text-blue-600 rounded mt-0.5">
+                        <label for="cgu-check" class="text-sm text-gray-600">
+                            J'ai lu et j'accepte les <a href="/cgu" target="_blank" class="text-blue-600 hover:underline">Conditions Générales d'Utilisation</a> et la <a href="/confidentialite" target="_blank" class="text-blue-600 hover:underline">Politique de Confidentialité</a> <span class="text-red-500">*</span>
+                        </label>
+                    </div>
+                    {% if errors.terms_accepted %}
+                    <p class="text-red-500 text-xs -mt-3">{{ errors.terms_accepted }}</p>
                     {% endif %}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirmer mot de passe PDF <span class="text-red-500">*</span></label>
-                    <input type="password" name="pdf_password_confirm"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
-                    {% if errors.pdf_password_confirm %}
-                    <p class="text-red-500 text-xs mt-1">{{ errors.pdf_password_confirm }}</p>
+
+                    {% if errors.general %}
+                    <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3">
+                        {{ errors.general }}
+                    </div>
                     {% endif %}
+
+                    <div class="flex gap-3">
+                        <button type="button" onclick="goToStep(2)" class="btn-outline flex-1 py-2.5 rounded-lg font-medium text-sm">← Retour</button>
+                        <button type="submit" class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm">Créer mon compte</button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Spécialité -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Spécialité <span class="text-red-500">*</span></label>
-                <select name="specialty" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
-                    <option value="">— Choisir une spécialité —</option>
-                    {% for spec in specialties %}
-                    <option value="{{ spec }}" {% if form_data.specialty == spec %}selected{% endif %}>{{ spec }}</option>
-                    {% endfor %}
-                </select>
-                {% if errors.specialty %}
-                <p class="text-red-500 text-xs mt-1">{{ errors.specialty }}</p>
-                {% endif %}
             </div>
-
-            <!-- Téléphone (optional) -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone <span class="text-gray-400">(optionnel)</span></label>
-                <input type="text" name="phone" value="{{ form_data.phone or '' }}" placeholder="+352 ..."
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
-            </div>
-
-            <!-- Pays/Région -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Pays / Région <span class="text-red-500">*</span></label>
-                <select name="country" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
-                    <option value="">— Choisir un pays —</option>
-                    {% for country_name, _ in countries %}
-                    <option value="{{ country_name }}" {% if form_data.country == country_name %}selected{% endif %}>{{ country_name }}</option>
-                    {% endfor %}
-                </select>
-                {% if errors.country %}
-                <p class="text-red-500 text-xs mt-1">{{ errors.country }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Newsletter (optional) -->
-            <div class="flex items-center gap-3">
-                <input type="checkbox" name="newsletter" id="newsletter-check"
-                       {% if form_data.newsletter %}checked{% endif %}
-                       class="w-4 h-4 text-blue-600 rounded">
-                <label for="newsletter-check" class="text-sm text-gray-600">Je souhaite recevoir les informations sur PrivateForm <span class="text-gray-400">(optionnel)</span></label>
-            </div>
-
-            <!-- CGU (required) -->
-            <div class="flex items-start gap-3">
-                <input type="checkbox" name="terms_accepted" id="cgu-check" required
-                       class="w-4 h-4 text-blue-600 rounded mt-0.5">
-                <label for="cgu-check" class="text-sm text-gray-600">
-                    J'ai lu et j'accepte les <a href="/cgu" target="_blank" class="text-blue-600 hover:underline">Conditions Générales d'Utilisation</a> et la <a href="/confidentialite" target="_blank" class="text-blue-600 hover:underline">Politique de Confidentialité</a> <span class="text-red-500">*</span>
-                </label>
-            </div>
-            {% if errors.terms_accepted %}
-            <p class="text-red-500 text-xs -mt-3">{{ errors.cgu }}</p>
-            {% endif %}
-
-            <!-- General error -->
-            {% if errors.general %}
-            <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3">
-                {{ errors.general }}
-            </div>
-            {% endif %}
-
-            <!-- Submit -->
-            <button type="submit" class="btn-primary w-full py-2.5 rounded-lg font-semibold text-sm">
-                S'inscrire
-            </button>
         </form>
     </div>
 </div>
@@ -187,19 +207,133 @@
 
 {% block extra_scripts %}
 <script>
-// Live password checklist update
-const pwInput = document.getElementById("password-input");
-if (pwInput) {
-    pwInput.addEventListener("input", function() {
-        const v = this.value;
-        toggleCheck("check-length", v.length >= 8);
-        toggleCheck("check-upper",  /[A-Z]/.test(v));
-        toggleCheck("check-lower",  /[a-z]/.test(v));
-        toggleCheck("check-number", /[0-9]/.test(v));
-    });
+// Determine initial step from server-side errors
+{% if errors.last_name or errors.first_name or errors.email or errors.password or errors.specialty %}
+let currentStep = 1;
+{% elif errors.pdf_password %}
+let currentStep = 2;
+{% else %}
+let currentStep = 3;
+{% endif %}
+
+function updateProgress(step) {
+    for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (i < step) {
+            dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 bg-blue-600 text-white";
+        } else if (i === step) {
+            dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 bg-blue-600 text-white ring-4 ring-blue-100";
+        } else {
+            dot.className = "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 bg-gray-200 text-gray-500";
+        }
+    }
+    for (let i = 1; i <= 2; i++) {
+        document.getElementById(`line-${i}`).className = "w-12 h-0.5 transition-all duration-300 " + (i < step ? "bg-blue-600" : "bg-gray-200");
+    }
 }
+
+function showStep(step, direction) {
+    const current = document.getElementById(`step-${currentStep}`);
+    const next = document.getElementById(`step-${step}`);
+    const outDir = direction === "forward" ? "-40px" : "40px";
+    const inDir  = direction === "forward" ? "40px"  : "-40px";
+
+    current.style.transition = "transform 0.25s ease, opacity 0.25s ease";
+    current.style.transform = `translateX(${outDir})`;
+    current.style.opacity = "0";
+
+    setTimeout(() => {
+        current.style.display = "none";
+        current.style.transition = current.style.transform = current.style.opacity = "";
+
+        next.style.display = "block";
+        next.style.transform = `translateX(${inDir})`;
+        next.style.opacity = "0";
+        next.style.transition = "transform 0.25s ease, opacity 0.25s ease";
+
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            next.style.transform = "translateX(0)";
+            next.style.opacity = "1";
+        }));
+
+        setTimeout(() => {
+            next.style.transition = next.style.transform = next.style.opacity = "";
+            currentStep = step;
+        }, 260);
+    }, 260);
+
+    updateProgress(step);
+}
+
+function validateStep1() {
+    const last  = document.querySelector('[name=last_name]').value.trim();
+    const first = document.querySelector('[name=first_name]').value.trim();
+    const email = document.querySelector('[name=email]').value.trim();
+    const pw    = document.getElementById('password-input').value;
+    const spec  = document.querySelector('[name=specialty]').value;
+
+    if (last.length < 2)  { alert("Veuillez indiquer votre nom (minimum 2 caractères)."); return false; }
+    if (first.length < 2) { alert("Veuillez indiquer votre prénom (minimum 2 caractères)."); return false; }
+    if (!email.includes('@')) { alert("Veuillez indiquer une adresse email valide."); return false; }
+    if (pw.length < 8 || !/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/[0-9]/.test(pw)) {
+        alert("Le mot de passe ne respecte pas les critères de sécurité."); return false;
+    }
+    if (!spec) { alert("Veuillez sélectionner votre spécialité."); return false; }
+    return true;
+}
+
+function validateStep2() {
+    const pdf   = document.getElementById('pdf-password-input').value;
+    const login = document.getElementById('password-input').value;
+
+    if (pdf.length < 8 || !/[A-Z]/.test(pdf) || !/[a-z]/.test(pdf) || !/[0-9]/.test(pdf)) {
+        alert("Le mot de passe PDF ne respecte pas les critères de sécurité."); return false;
+    }
+    if (pdf === login) {
+        alert("Le mot de passe PDF ne peut pas être identique au mot de passe de connexion."); return false;
+    }
+    return true;
+}
+
+function goToStep(step) {
+    if (step > currentStep) {
+        if (currentStep === 1 && !validateStep1()) return;
+        if (currentStep === 2 && !validateStep2()) return;
+    }
+    showStep(step, step > currentStep ? "forward" : "backward");
+}
+
+// Initialize
+updateProgress(currentStep);
+for (let i = 1; i <= 3; i++) {
+    document.getElementById(`step-${i}`).style.display = (i === currentStep) ? "block" : "none";
+}
+
+// Live checklist — login password
+document.getElementById("password-input").addEventListener("input", function() {
+    const v = this.value;
+    toggleCheck("check-length", v.length >= 8);
+    toggleCheck("check-upper",  /[A-Z]/.test(v));
+    toggleCheck("check-lower",  /[a-z]/.test(v));
+    toggleCheck("check-number", /[0-9]/.test(v));
+    const pdf = document.getElementById('pdf-password-input').value;
+    if (pdf) toggleCheck("pdf-check-different", pdf !== v);
+});
+
+// Live checklist — PDF password
+document.getElementById("pdf-password-input").addEventListener("input", function() {
+    const v     = this.value;
+    const login = document.getElementById('password-input').value;
+    toggleCheck("pdf-check-length",    v.length >= 8);
+    toggleCheck("pdf-check-upper",     /[A-Z]/.test(v));
+    toggleCheck("pdf-check-lower",     /[a-z]/.test(v));
+    toggleCheck("pdf-check-number",    /[0-9]/.test(v));
+    toggleCheck("pdf-check-different", v.length > 0 && v !== login);
+});
+
 function toggleCheck(id, ok) {
-    document.getElementById(id).classList.toggle("ok", ok);
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle("ok", ok);
 }
 </script>
 {% endblock %}

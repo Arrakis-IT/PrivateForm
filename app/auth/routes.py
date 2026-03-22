@@ -106,9 +106,7 @@ async def register_submit(request: Request, db: Session = Depends(get_db)):
     first_name = (form_data.get("first_name") or "").strip()
     email = (form_data.get("email") or "").strip().lower()
     password = form_data.get("password") or ""
-    password_confirm = form_data.get("password_confirm") or ""
     pdf_password = form_data.get("pdf_password") or ""
-    pdf_password_confirm = form_data.get("pdf_password_confirm") or ""
     specialty = form_data.get("specialty") or ""
     phone = (form_data.get("phone") or "").strip()
     country = form_data.get("country") or ""
@@ -129,14 +127,12 @@ async def register_submit(request: Request, db: Session = Depends(get_db)):
         errors["password"] = "Veuillez définir un mot de passe."
     elif not is_password_valid(password):
         errors["password"] = "Le mot de passe ne respecte pas les critères de sécurité."
-    elif password != password_confirm:
-        errors["password"] = "Les deux mots de passe ne correspondent pas."
     if not pdf_password:
         errors["pdf_password"] = "Veuillez définir un mot de passe de chiffrement."
     elif not is_password_valid(pdf_password):
         errors["pdf_password"] = "Le mot de passe de chiffrement ne respecte pas les critères de sécurité."
-    elif pdf_password != pdf_password_confirm:
-        errors["pdf_password"] = "Les deux mots de passe de chiffrement ne correspondent pas."
+    elif pdf_password == password:
+        errors["pdf_password"] = "Le mot de passe PDF ne peut pas être identique au mot de passe de connexion."
     if phone and not phone.startswith("+"):
         errors["phone"] = "Le format du téléphone doit inclure l'indicatif (ex: +352...)."
     if not terms_accepted:

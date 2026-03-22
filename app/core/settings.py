@@ -96,7 +96,7 @@ class Settings(BaseSettings):
     LOGIN_ATTEMPTS_PER_IP: int = 10       # Per IP per window
     LOGIN_ATTEMPTS_PER_EMAIL: int = 5     # Per email per window
     LOGIN_WINDOW_MINUTES: int = 15
-    REGISTER_ATTEMPTS_PER_IP: int = 3
+    REGISTER_ATTEMPTS_PER_IP: int = 7
     REGISTER_WINDOW_MINUTES: int = 60
 
     # -----------------------------------------------------------------------
