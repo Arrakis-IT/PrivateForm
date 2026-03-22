@@ -175,6 +175,7 @@ async def home(request: Request, db: Session = Depends(get_db),
         "forms": forms_data,
         "at_limit": at_limit,
         "form_limit": doctor.form_limit,
+        "question_limit": doctor.question_limit,
         "contact_email": settings.CONTACT_EMAIL,
     })
 
