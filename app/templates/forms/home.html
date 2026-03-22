@@ -115,7 +115,7 @@
 
                     <!-- Share -->
                     <button onclick="shareForm('{{ form.id }}')" class="text-gray-400 hover:text-blue-600 transition-colors p-1.5" title="Partager">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342c.886.894 2.425.894 3.312 0l4.24-4.49c.886-.894.886-2.343 0-3.237s-2.425-.894-3.312 0L8.684 10.105M15.316 10.658c-.886-.894-2.425-.894-3.312 0l-4.24 4.49c-.886.894-.886 2.343 0 3.237s2.425.894 3.312 0l4.24-4.49c.886-.894.886-2.343 0-3.237z"/>
                         </svg>
                     </button>
@@ -150,6 +150,95 @@
         <p class="text-gray-400">Aucun formulaire pour le moment.</p>
     </div>
     {% endif %}
+
+    <!-- ================================================================
+         HELP PANEL
+         ================================================================ -->
+    <div class="mt-8">
+        <button onclick="toggleHelp()" class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-3">
+            <div class="w-6 h-6 rounded-full border-2 border-gray-400 flex items-center justify-center text-xs font-bold text-gray-500">?</div>
+            <span id="help-toggle-label">Afficher l'aide</span>
+        </button>
+
+        <div id="help-panel" class="bg-white border border-gray-200 rounded-xl overflow-hidden" style="display:none;">
+
+            <!-- Section 1 -->
+            <div class="border-b border-gray-100">
+                <button onclick="toggleSection('help-1')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                    <span class="text-sm font-semibold text-gray-700">Créer et gérer des formulaires</span>
+                    <svg id="help-1-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="help-1" class="px-5 pb-4 text-sm text-gray-600 space-y-2" style="display:none;">
+                    <p>Utilise le bouton <strong>Nouveau formulaire</strong> pour créer un formulaire. Chaque compte peut avoir jusqu'à <strong>{{ form_limit }} formulaires</strong>.</p>
+                    <p>Le <strong>nom du formulaire</strong> est visible uniquement pour toi — il te permet de distinguer tes formulaires dans la liste. Le patient ne le voit pas.</p>
+                    <p>Si tu atteins la limite, supprime un formulaire existant ou contacte-nous pour l'augmenter.</p>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="border-b border-gray-100">
+                <button onclick="toggleSection('help-2')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                    <span class="text-sm font-semibold text-gray-700">Ajouter des questions</span>
+                    <svg id="help-2-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="help-2" class="px-5 pb-4 text-sm text-gray-600 space-y-2" style="display:none;">
+                    <p>Un formulaire peut contenir jusqu'à <strong>10 questions</strong>. Chaque question a un type de réponse : texte libre, oui/non, liste déroulante, date, nombre, email, téléphone ou échelle.</p>
+                    <p>Si une question est marquée <strong>obligatoire</strong>, le patient ne pourra pas envoyer le formulaire sans y répondre.</p>
+                    <p>⚠️ N'oublie pas de cliquer sur <strong>Ajouter la question</strong> après avoir rempli les champs — sinon la question ne sera pas incluse dans le formulaire.</p>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="border-b border-gray-100">
+                <button onclick="toggleSection('help-3')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                    <span class="text-sm font-semibold text-gray-700">Enregistrer et éditer</span>
+                    <svg id="help-3-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="help-3" class="px-5 pb-4 text-sm text-gray-600 space-y-2" style="display:none;">
+                    <p>En bas del editor tienes dos botones:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><strong>Enregistrer</strong> — guarda los cambios y se queda en el editor.</li>
+                        <li><strong>Enregistrer et retourner</strong> — guarda y vuelve a esta lista.</li>
+                    </ul>
+                    <p>Para editar un formulario ya creado, haz clic en el icono de <strong>lápiz ✏️</strong> en la lista. Si el formulario estaba activo, se desactivará automáticamente al guardar para evitar inconsistencias.</p>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="border-b border-gray-100">
+                <button onclick="toggleSection('help-4')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                    <span class="text-sm font-semibold text-gray-700">Activer et désactiver un formulaire</span>
+                    <svg id="help-4-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="help-4" class="px-5 pb-4 text-sm text-gray-600 space-y-2" style="display:none;">
+                    <p>El <strong>interruptor</strong> de cada formulario controla si está accesible para los pacientes:</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><span class="text-green-600 font-medium">Actif</span> — el formulario es accesible. Cualquier paciente con el enlace puede abrirlo y enviarlo.</li>
+                        <li><span class="text-gray-500 font-medium">Inactif</span> — el formulario está bloqueado. El paciente verá un mensaje de que no está disponible.</li>
+                    </ul>
+                    <p>Activa el formulario solo cuando esté listo para recibir respuestas.</p>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div>
+                <button onclick="toggleSection('help-5')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                    <span class="text-sm font-semibold text-gray-700">Compartir el formulario con pacientes</span>
+                    <svg id="help-5-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="help-5" class="px-5 pb-4 text-sm text-gray-600 space-y-2" style="display:none;">
+                    <p>Haz clic en el icono de <strong>compartir 🔗</strong> para obtener el enlace y el código QR del formulario.</p>
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><strong>Copiar URL</strong> — pega el enlace en un email, SMS o web.</li>
+                        <li><strong>Descargar QR</strong> — imprime el código QR y colócalo en la sala de espera. El paciente lo escanea con su móvil y accede al formulario directamente.</li>
+                    </ul>
+                    <p>⚠️ Cualquier persona con ese enlace o QR puede acceder al formulario si está <strong>activo</strong>. Desactívalo cuando no quieras recibir más respuestas.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
@@ -187,6 +276,37 @@ async function shareForm(formId) {
         showShareModal(data.url, data.qr_base64, data.form_name);
     } catch(e) { showToast("Erreur lors de la génération du QR.", "error"); }
 }
+
+// --------------------------------------------------------------------------
+// Help panel
+// --------------------------------------------------------------------------
+const HELP_KEY = "pf_help_open";
+
+function toggleHelp() {
+    const panel = document.getElementById("help-panel");
+    const label = document.getElementById("help-toggle-label");
+    const isOpen = panel.style.display !== "none";
+    panel.style.display = isOpen ? "none" : "block";
+    label.textContent = isOpen ? "Afficher l'aide" : "Masquer l'aide";
+    localStorage.setItem(HELP_KEY, isOpen ? "0" : "1");
+}
+
+function toggleSection(id) {
+    const content = document.getElementById(id);
+    const icon = document.getElementById(id + "-icon");
+    const isOpen = content.style.display !== "none";
+    content.style.display = isOpen ? "none" : "block";
+    icon.style.transform = isOpen ? "" : "rotate(180deg)";
+}
+
+// On load: open panel by default first time, respect preference afterwards
+(function() {
+    const pref = localStorage.getItem(HELP_KEY);
+    if (pref === null || pref === "1") {
+        document.getElementById("help-panel").style.display = "block";
+        document.getElementById("help-toggle-label").textContent = "Masquer l'aide";
+    }
+})();
 </script>
 <style>
 .toggle-switch {
