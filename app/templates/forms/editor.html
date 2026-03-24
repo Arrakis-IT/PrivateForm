@@ -104,6 +104,7 @@
                         <option value="email" {% if q.question_type == 'email' %}selected{% endif %}>Email</option>
                         <option value="phone" {% if q.question_type == 'phone' %}selected{% endif %}>Téléphone</option>
                         <option value="scale" {% if q.question_type == 'scale' %}selected{% endif %}>Échelle 1–10</option>
+                        <option value="matricule" {% if q.question_type == 'matricule' %}selected{% endif %}>Matricule CNS</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-2">
@@ -191,6 +192,7 @@
                         <option value="email">Email</option>
                         <option value="phone">Téléphone</option>
                         <option value="scale">Échelle 1–10</option>
+                        <option value="matricule">Matricule CNS</option>
                     </select>
                 </div>
                 <div class="flex items-end gap-2">
@@ -407,6 +409,7 @@ function addQuestion() {
                     <option value="email" ${type==='email'?'selected':''}>Email</option>
                     <option value="phone" ${type==='phone'?'selected':''}>Téléphone</option>
                     <option value="scale" ${type==='scale'?'selected':''}>Échelle 1–10</option>
+                    <option value="matricule" ${type==='matricule'?'selected':''}>Matricule CNS</option>
                 </select>
             </div>
             <div class="flex items-end gap-2">

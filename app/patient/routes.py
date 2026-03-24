@@ -162,6 +162,13 @@ def validate_answer(question: dict, answer) -> str | None:
         except (ValueError, TypeError):
             return f"Valeur invalide pour « {q_text} »."
 
+    elif q_type == "matricule":
+        if not isinstance(answer, str):
+            return f"Matricule invalide pour « {q_text} »."
+        digits_only = answer.replace(" ", "").replace("-", "")
+        if not digits_only.isdigit() or len(digits_only) != 11:
+            return f"Le matricule doit contenir exactement 11 chiffres."
+
     return None
 
 

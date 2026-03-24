@@ -263,6 +263,7 @@ def generate_pdf(
             "email": "Email",
             "phone": "Téléphone",
             "scale": "Échelle 1-10",
+            "matricule": "Matricule CNS",
         }
         pdf.set_font("DejaVu", "I", 8)
         pdf.set_text_color(156, 163, 175)

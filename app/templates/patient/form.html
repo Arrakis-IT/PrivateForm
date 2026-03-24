@@ -199,6 +199,12 @@
             <input type="tel" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
                    placeholder="+352 ..." inputmode="tel">
 
+            <!-- ============ MATRICULE CNS ============ -->
+            {% elif q.question_type == 'matricule' %}
+            <input type="text" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+                   placeholder="19850315001" maxlength="11" inputmode="numeric" pattern="[0-9]{11}">
+            <p class="text-xs text-gray-400 mt-1">Matricule CNS : 11 chiffres (ex: 19850315001)</p>
+
             <!-- ============ SCALE 1-10 ============ -->
             {% elif q.question_type == 'scale' %}
             <div>
@@ -304,6 +310,7 @@ function collectAnswers() {
             case "email":
             case "phone":
             case "number":
+            case "matricule":
                 value = block.querySelector(".answer-input").value.trim();
                 break;
 
