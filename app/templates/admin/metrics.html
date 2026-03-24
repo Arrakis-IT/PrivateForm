@@ -43,6 +43,30 @@
 
     </div>
 
+    <!-- Brevo today -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 mb-6">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Emails Brevo — Aujourd'hui</h2>
+
+        {% if brevo_today.error %}
+        <p class="text-red-500 text-sm">Erreur : {{ brevo_today.error }}</p>
+        {% else %}
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <p class="text-2xl font-bold text-gray-800">{{ brevo_today.total_sent }}</p>
+                <p class="text-xs text-gray-400">Envoyés</p>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-green-600">{{ brevo_today.delivered }}</p>
+                <p class="text-xs text-gray-400">Délivrés</p>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-red-500">{{ brevo_today.bounces }}</p>
+                <p class="text-xs text-gray-400">Bounces</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
     <!-- Brevo 30 days -->
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 mb-6">
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Emails Brevo — 30 derniers jours</h2>

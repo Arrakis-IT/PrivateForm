@@ -68,6 +68,38 @@ async def _fetch_brevo_stats() -> dict:
         return {"total_sent": None, "delivered": None, "bounces": None, "error": str(e)}
 
 
+async def _fetch_brevo_today_stats() -> dict:
+    """
+    Fetches aggregated email statistics from Brevo for today only.
+    """
+    today = date.today()
+    headers = {
+        "api-key": settings.BREVO_API_KEY,
+        "Content-Type": "application/json",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                "https://api.brevo.com/v3/smtp/statistics/aggregatedReport",
+                headers=headers,
+                params={
+                    "startDate": today.isoformat(),
+                    "endDate": today.isoformat(),
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            return {
+                "total_sent": data.get("delivered", 0) + data.get("softBounces", 0) + data.get("hardBounces", 0),
+                "delivered": data.get("delivered", 0),
+                "bounces": data.get("softBounces", 0) + data.get("hardBounces", 0),
+                "error": None,
+            }
+    except Exception as e:
+        logger.error(f"Error fetching Brevo today stats: {e!r}")
+        return {"total_sent": None, "delivered": None, "bounces": None, "error": str(e)}
+
+
 async def _fetch_brevo_daily_stats() -> list[dict]:
     """
     Fetches per-day email statistics from Brevo for the last 7 days.
@@ -86,7 +118,6 @@ async def _fetch_brevo_daily_stats() -> list[dict]:
                 params={
                     "startDate": start_date.isoformat(),
                     "endDate": today.isoformat(),
-                    "aggregation": "day",
                 },
             )
             response.raise_for_status()
@@ -97,10 +128,10 @@ async def _fetch_brevo_daily_stats() -> list[dict]:
                     "date": r.get("date", ""),
                     "sent": r.get("delivered", 0) + r.get("softBounces", 0) + r.get("hardBounces", 0),
                 }
-                for r in sorted(reports, key=lambda x: x.get("date", ""))
+                for r in sorted(reports, key=lambda x: x.get("date", ""), reverse=True)
             ]
     except Exception as e:
-        logger.error(f"Error fetching Brevo daily stats: {e}")
+        logger.error(f"Error fetching Brevo daily stats: {e!r}")
         return []
 
 
@@ -130,6 +161,7 @@ async def admin_metrics(request: Request):
         ).scalar() or 0
 
         # --- Brevo ---
+        brevo_today = await _fetch_brevo_today_stats()
         brevo_30d = await _fetch_brevo_stats()
         brevo_daily = await _fetch_brevo_daily_stats()
 
@@ -141,6 +173,7 @@ async def admin_metrics(request: Request):
         "total_doctors": total_doctors,
         "new_doctors_week": new_doctors_week,
         "total_active_forms": total_active_forms,
+        "brevo_today": brevo_today,
         "brevo_30d": brevo_30d,
         "brevo_daily": brevo_daily,
     })
