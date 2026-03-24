@@ -65,7 +65,9 @@ else
     echo "  → app_secret_key.txt already exists (not overwriting)."
 fi
 
-chmod 600 "${SECRETS_DIR}"/*.txt 2>/dev/null || true
+# 644: directory is 700 so only root can browse it, but Docker (root) mounts
+# the files inside the container — appuser needs read access inside the container.
+chmod 644 "${SECRETS_DIR}"/*.txt 2>/dev/null || true
 echo ""
 
 # ---------------------------------------------------------------
@@ -169,7 +171,7 @@ if [ ! -f "poetry.lock" ]; then
     }
 fi
 
-docker compose build 2>&1
+docker compose -f docker-compose.yml build 2>&1
 echo "  ✓ Build completed."
 echo ""
 
@@ -177,13 +179,13 @@ echo ""
 # STEP 8: Deploy
 # ---------------------------------------------------------------
 echo "[STEP 8] Starting containers..."
-docker compose up -d
+docker compose -f docker-compose.yml up -d
 echo ""
 
 # Wait for database to be ready
 echo "  → Waiting for PostgreSQL to be ready..."
 for i in $(seq 1 30); do
-    if docker compose exec db pg_isready -U privateform_user -d privateform_db >/dev/null 2>&1; then
+    if docker compose -f docker-compose.yml exec db pg_isready -U privateform_user -d privateform_db >/dev/null 2>&1; then
         echo "  ✓ PostgreSQL ready."
         break
     fi
@@ -196,7 +198,7 @@ echo ""
 # STEP 9: Migration
 # ---------------------------------------------------------------
 echo "[STEP 9] Running Alembic migration..."
-docker compose exec app alembic upgrade head
+docker compose -f docker-compose.yml exec app alembic upgrade head
 echo "  ✓ Migration completed."
 echo ""
 
@@ -206,7 +208,7 @@ echo ""
 echo "=============================================="
 echo "  Container status:"
 echo "=============================================="
-docker compose ps
+docker compose -f docker-compose.yml ps
 echo ""
 echo "=============================================="
 echo "  ✓ Deploy completed."
