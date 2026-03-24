@@ -103,11 +103,13 @@ from app.auth.routes import router as auth_router
 from app.forms.routes import router as forms_router
 from app.users.routes import router as users_router
 from app.patient.routes import router as patient_router
+from app.admin.routes import router as admin_router
 
 app.include_router(auth_router)
 app.include_router(forms_router, prefix="/doctor")
 app.include_router(users_router, prefix="/doctor")
 app.include_router(patient_router)
+app.include_router(admin_router)
 
 
 # -----------------------------------------------------------------------------

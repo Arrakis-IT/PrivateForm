@@ -90,6 +90,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/privateform.conf:/etc/nginx/conf.d/privateform.conf:ro
+      - /etc/privateform/.htpasswd:/etc/nginx/.htpasswd:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
       - static_files:/usr/share/nginx/html/static

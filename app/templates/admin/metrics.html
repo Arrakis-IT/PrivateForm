@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Métriques PrivateForm</title>
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div class="max-w-4xl mx-auto px-6 py-10">
+
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">PrivateForm — Tableau de bord</h1>
+            <p class="text-sm text-gray-400 mt-1">Données au {{ today }}</p>
+        </div>
+        <img src="/static/img/logo.png" alt="PrivateForm" class="h-8 opacity-60">
+    </div>
+
+    <!-- KPI cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Médecins actifs</p>
+            <p class="text-3xl font-bold text-gray-800">{{ total_doctors }}</p>
+            <p class="text-xs text-gray-400 mt-1">comptes vérifiés</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Nouveaux cette semaine</p>
+            <p class="text-3xl font-bold text-indigo-600">{{ new_doctors_week }}</p>
+            <p class="text-xs text-gray-400 mt-1">inscriptions (7 jours)</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Formulaires actifs</p>
+            <p class="text-3xl font-bold text-gray-800">{{ total_active_forms }}</p>
+            <p class="text-xs text-gray-400 mt-1">hors exemples</p>
+        </div>
+
+    </div>
+
+    <!-- Brevo 30 days -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 mb-6">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Emails Brevo — 30 derniers jours</h2>
+
+        {% if brevo_30d.error %}
+        <p class="text-red-500 text-sm">Erreur lors de la récupération des données Brevo : {{ brevo_30d.error }}</p>
+        {% else %}
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <p class="text-2xl font-bold text-gray-800">{{ brevo_30d.total_sent }}</p>
+                <p class="text-xs text-gray-400">Envoyés</p>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-green-600">{{ brevo_30d.delivered }}</p>
+                <p class="text-xs text-gray-400">Délivrés</p>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-red-500">{{ brevo_30d.bounces }}</p>
+                <p class="text-xs text-gray-400">Bounces</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Brevo 7 days daily -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Emails par jour — 7 derniers jours</h2>
+
+        {% if brevo_daily %}
+        <div class="space-y-2">
+            {% for day in brevo_daily %}
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 w-24 shrink-0">{{ day.date }}</span>
+                <div class="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div class="bg-indigo-400 h-2 rounded-full"
+                         style="width: {{ [((day.sent / (brevo_30d.total_sent or 1)) * 100 * 7)|int, 100]|min }}%"></div>
+                </div>
+                <span class="text-sm font-medium text-gray-700 w-8 text-right">{{ day.sent }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400 text-sm">Aucune donnée disponible.</p>
+        {% endif %}
+    </div>
+
+</div>
+</body>
+</html>
