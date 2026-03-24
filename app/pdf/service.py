@@ -276,7 +276,7 @@ def generate_pdf(
             pdf.set_text_color(156, 163, 175)
             pdf.multi_cell(0, 5, "Non répondu")
         elif question_type == "yes_no":
-            label = "Oui" if answer_value == "yes" else "Non"
+            label = "Oui" if answer_value == "oui" else "Non"
             pdf.cell(0, 5, label, new_x="LMARGIN", new_y="NEXT")
         elif question_type == "multiselect" and isinstance(answer_value, list):
             pdf.cell(0, 5, ", ".join(answer_value), new_x="LMARGIN", new_y="NEXT")
@@ -285,8 +285,8 @@ def generate_pdf(
             scale_label_1 = question.get("scale_label_1", "")
             scale_label_10 = question.get("scale_label_10", "")
             scale_text = str(answer_value)
-            if scale_label_1 or scale_label_10:
-                scale_text += f"  ({scale_label_1} ← → {scale_label_10})"
+#            if scale_label_1 or scale_label_10:
+#                scale_text += f"  ({scale_label_1} ← → {scale_label_10})"
             pdf.cell(0, 5, scale_text, new_x="LMARGIN", new_y="NEXT")
         else:
             pdf.multi_cell(0, 5, str(answer_value))
