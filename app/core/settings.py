@@ -59,6 +59,7 @@ class Settings(BaseSettings):
     BREVO_SENDER_EMAIL: str = "privateform@arrakis.lu"
     BREVO_SENDER_NAME: str = "PrivateForm"
     BREVO_REPLY_TO: str = "privateform@arrakis.lu"
+    BREVO_DAILY_LIMIT: int = 300
 
     # -----------------------------------------------------------------------
     # Contact

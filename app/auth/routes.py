@@ -32,7 +32,7 @@ from app.auth.utils import (
     get_dummy_hash,
 )
 from app.auth.crypto import encrypt_pdf_password
-from app.core.rate_limiter import check_password_reset, check_verification_resend, check_login, check_register
+from app.core.rate_limiter import check_password_reset, check_verification_resend, check_login, check_register, brevo_quota
 from app.email.service import (
     send_verification_email, send_password_reset_email,
     send_password_changed_email,
@@ -89,6 +89,14 @@ async def register_page(request: Request):
     token = get_token_from_cookie(request)
     if token and decode_access_token(token):
         return RedirectResponse(url="/doctor/home")
+    if brevo_quota.is_blocked():
+        return templates.TemplateResponse(request, "auth/register.html", {
+            "specialties": MEDICAL_SPECIALTIES,
+            "countries": AVAILABLE_COUNTRIES,
+            "errors": {"general": "Il n'est pas possible de créer un compte en ce moment. Veuillez réessayer dans quelques minutes."},
+            "form_data": {},
+            "password_checks": {"min_length": False, "has_uppercase": False, "has_lowercase": False, "has_number": False},
+        }, status_code=503)
     return templates.TemplateResponse(request, "auth/register.html", {
         "specialties": MEDICAL_SPECIALTIES,
         "countries": AVAILABLE_COUNTRIES,
@@ -137,6 +145,19 @@ async def register_submit(request: Request, db: Session = Depends(get_db)):
         errors["phone"] = "Le format du téléphone doit inclure l'indicatif (ex: +352...)."
     if not terms_accepted:
         errors["terms_accepted"] = "Vous devez accepter les CGU et la politique de confidentialité."
+
+    # Brevo quota check: before any DB query
+    if brevo_quota.is_blocked():
+        return templates.TemplateResponse(request, "auth/register.html", {
+            "specialties": MEDICAL_SPECIALTIES,
+            "countries": AVAILABLE_COUNTRIES,
+            "errors": {"general": "Il n'est pas possible de créer un compte en ce moment. Veuillez réessayer dans quelques minutes."},
+            "form_data": {
+                "last_name": last_name, "first_name": first_name, "email": email,
+                "specialty": specialty, "phone": phone, "country": country,
+            },
+            "password_checks": validate_password_strength(password),
+        }, status_code=503)
 
     # Rate limiting: before any DB query
     if not check_register(request):
@@ -232,6 +253,13 @@ async def verify_pending(request: Request):
 async def resend_verification(request: Request, db: Session = Depends(get_db)):
     form_data = await request.form()
     email = (form_data.get("email") or "").strip().lower()
+
+    if brevo_quota.is_blocked():
+        return templates.TemplateResponse(request, "auth/verify_pending.html", {
+            "email": email,
+            "resend_error": "Il n'est pas possible d'envoyer l'email de vérification en ce moment. Veuillez réessayer dans quelques minutes.",
+            "resend_success": False,
+        }, status_code=503)
 
     if not check_verification_resend(request):
         return templates.TemplateResponse(request, "auth/verify_pending.html", {
@@ -390,6 +418,11 @@ async def logout(request: Request):
 
 @router.get("/forgot-password", response_class=HTMLResponse)
 async def forgot_password_page(request: Request):
+    if brevo_quota.is_blocked():
+        return templates.TemplateResponse(request, "auth/forgot_password.html", {
+            "submitted": False,
+            "error": "Il n'est pas possible de réinitialiser votre mot de passe en ce moment. Veuillez réessayer dans quelques minutes.",
+        }, status_code=503)
     return templates.TemplateResponse(request, "auth/forgot_password.html", {
         "submitted": False, "error": None,
     })
@@ -399,6 +432,12 @@ async def forgot_password_page(request: Request):
 async def forgot_password_submit(request: Request, db: Session = Depends(get_db)):
     form_data = await request.form()
     email = (form_data.get("email") or "").strip().lower()
+
+    if brevo_quota.is_blocked():
+        return templates.TemplateResponse(request, "auth/forgot_password.html", {
+            "submitted": False,
+            "error": "Il n'est pas possible de réinitialiser votre mot de passe en ce moment. Veuillez réessayer dans quelques minutes.",
+        }, status_code=503)
 
     if not check_password_reset(request):
         return templates.TemplateResponse(request, "auth/forgot_password.html", {

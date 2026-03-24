@@ -20,7 +20,7 @@ import base64
 import httpx
 from app.core.settings import settings
 from app.core.logging import get_logger
-from app.core.rate_limiter import check_alert_limit
+from app.core.rate_limiter import check_alert_limit, brevo_quota
 
 logger = get_logger("email")
 
@@ -43,7 +43,9 @@ async def _send_email(
     attachments: list[dict] | None = None,
 ) -> bool:
     """
-    Base function to send email via Brevo API.
+    Sends email via Brevo API.
+    On success: increments daily quota counter and fires threshold alert emails
+    (50%, 80%, 95%) when crossed. Alert emails also count toward the quota.
     Returns True if sent successfully, False if it fails.
     """
     headers = {
@@ -77,10 +79,24 @@ async def _send_email(
             response = await client.post(BREVO_API_URL, json=payload, headers=headers)
             response.raise_for_status()
             logger.info(f"Email sent successfully to {_obfuscate_email(to_email)}: {subject}")
-            return True
     except Exception as e:
         logger.error(f"Error sending email to {_obfuscate_email(to_email)}: {e}")
         return False
+
+    # Increment quota and fire threshold alerts if needed.
+    # mark_alert_sent is called before sending to avoid re-triggering on the
+    # alert email itself.
+    brevo_quota.increment()
+    for threshold in brevo_quota.get_pending_threshold_alerts():
+        brevo_quota.mark_alert_sent(threshold)
+        await _send_email(
+            to_email=settings.ALERT_EMAIL,
+            to_name="PrivateForm Alertes",
+            subject=f"PrivateForm - Brevo: usado el {threshold}% de la capacidad",
+            html_body="",
+        )
+
+    return True
 
 # =============================================================================
 # Base HTML template for emails

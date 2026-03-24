@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.settings import settings
 from app.core.models import Form, Question
-from app.core.rate_limiter import check_patient_submission
+from app.core.rate_limiter import check_patient_submission, brevo_quota
 from app.pdf.service import generate_and_encrypt_pdf, generate_pdf_filename
 from app.email.service import send_form_submission_email
 from app.core.logging import get_logger
@@ -176,6 +176,12 @@ async def patient_form_page(request: Request, slug: str):
     db = SessionLocal()
 
     try:
+        # Brevo quota check — block access if at 99% of daily limit
+        if brevo_quota.is_blocked():
+            return templates.TemplateResponse(request, "patient/unavailable.html", {
+                "quota_exceeded": True,
+            }, status_code=503)
+
         form = get_form_by_slug(db, slug)
 
         # Form doesn't exist, inactive or deleted
@@ -307,18 +313,20 @@ async def patient_form_submit(request: Request, slug: str):
             return JSONResponse({"success": False, "error": "Erreur d'envoi. Si le problème persiste, contactez votre médecin."}, status_code=500)
 
         # --- Send email to doctor ---
-        try:
-            await send_form_submission_email(
-                to_email=doctor.email,
-                doctor_name=doctor_name,
-                form_name=form.name,
-                submission_timestamp=submission_timestamp,
-                pdf_bytes=encrypted_pdf,
-                pdf_filename=pdf_filename,
-            )
-        except Exception as e:
-            logger.error(f"Error sending email for form {slug}: {e}")
-            return JSONResponse({"success": False, "error": "Erreur d'envoi. Si le problème persiste, contactez votre médecin."}, status_code=500)
+        email_sent = await send_form_submission_email(
+            to_email=doctor.email,
+            doctor_name=doctor_name,
+            form_name=form.name,
+            submission_timestamp=submission_timestamp,
+            pdf_bytes=encrypted_pdf,
+            pdf_filename=pdf_filename,
+        )
+        if not email_sent:
+            logger.error(f"Email delivery failed for form {slug} — patient answers preserved on screen")
+            return JSONResponse({
+                "success": False,
+                "error": "L'envoi a échoué. Vos réponses sont conservées, veuillez réessayer dans quelques instants.",
+            }, status_code=500)
 
         # --- PDF destroyed (never saved to disk) ---
         del encrypted_pdf

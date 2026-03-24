@@ -19,11 +19,19 @@
             </svg>
         </div>
 
+        {% if quota_exceeded %}
+        <h1 class="text-xl font-bold text-gray-700 mb-3">Formulaire temporairement indisponible</h1>
+        <p class="text-gray-500 text-sm leading-relaxed">
+            Il n'est pas possible d'accéder à ce formulaire en ce moment.<br>
+            Veuillez réessayer dans quelques minutes.
+        </p>
+        {% else %}
         <h1 class="text-xl font-bold text-gray-700 mb-3">Ce formulaire n'est plus disponible</h1>
         <p class="text-gray-500 text-sm leading-relaxed">
             Ce formulaire a peut-être été désactivé ou supprimé par le médecin.<br>
             Contactez votre médecin pour plus d'informations.
         </p>
+        {% endif %}
 
         <!-- Logo footer -->
         <div class="mt-12 flex justify-center">

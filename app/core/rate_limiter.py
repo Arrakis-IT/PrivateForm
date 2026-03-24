@@ -17,6 +17,7 @@
 
 import time
 from collections import defaultdict
+from datetime import date as _date
 from fastapi import Request
 from app.core.settings import settings
 
@@ -149,6 +150,56 @@ def check_login(request: Request, email: str) -> bool:
         window_seconds=window,
     )
     return ip_allowed and email_allowed
+
+class BrevoQuotaTracker:
+    """
+    Tracks daily Brevo email quota in memory.
+    Resets automatically at midnight on the first operation of the new day.
+    No external cron needed — reset is triggered lazily on each call.
+    """
+    _THRESHOLDS = [50, 80, 95]
+
+    def __init__(self):
+        self._count: int = 0
+        self._day: _date = _date.today()
+        self._alerts_sent: set[int] = set()
+
+    def _check_reset(self) -> None:
+        today = _date.today()
+        if today != self._day:
+            self._count = 0
+            self._day = today
+            self._alerts_sent = set()
+
+    def increment(self) -> int:
+        """Increments the counter and returns the new value."""
+        self._check_reset()
+        self._count += 1
+        return self._count
+
+    def get_count(self) -> int:
+        self._check_reset()
+        return self._count
+
+    def is_blocked(self) -> bool:
+        """Returns True when the counter is at or above 99% of the daily limit."""
+        self._check_reset()
+        return self._count >= int(settings.BREVO_DAILY_LIMIT * 0.99)
+
+    def get_pending_threshold_alerts(self) -> list[int]:
+        """Returns threshold percentages crossed but not yet notified."""
+        self._check_reset()
+        if settings.BREVO_DAILY_LIMIT == 0:
+            return []
+        pct = (self._count / settings.BREVO_DAILY_LIMIT) * 100
+        return [t for t in self._THRESHOLDS if pct >= t and t not in self._alerts_sent]
+
+    def mark_alert_sent(self, threshold: int) -> None:
+        self._alerts_sent.add(threshold)
+
+
+brevo_quota = BrevoQuotaTracker()
+
 
 def check_register(request: Request) -> bool:
     """
