@@ -260,16 +260,13 @@ function selectYN(btn, value) {
     const block = btn.closest(".question-block");
     block.querySelectorAll(".yn-btn").forEach(b => {
         b.classList.remove("border-green-400", "text-green-600", "border-red-400", "text-red-600", "bg-green-50", "bg-red-50");
-        delete b.dataset.selected;
-        delete b.dataset.value;
     });
     if (value === "oui") {
         btn.classList.add("border-green-400", "text-green-600", "bg-green-50");
     } else {
         btn.classList.add("border-red-400", "text-red-600", "bg-red-50");
     }
-    btn.dataset.selected = "true";
-    btn.dataset.value = value;
+    block.dataset.ynValue = value;
 }
 
 // --------------------------------------------------------------------------
@@ -319,10 +316,7 @@ function collectAnswers() {
                 break;
 
             case "yes_no":
-                const selected = block.querySelector(".yn-btn[data-selected='true']");
-                if (selected) {
-                    value = selected.dataset.value;
-                }
+                value = block.dataset.ynValue || null;
                 break;
 
             case "date":
