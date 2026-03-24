@@ -254,7 +254,7 @@ async def patient_form_submit(request: Request, slug: str):
         # --- Get sorted questions ---
         questions = sorted(form.questions, key=lambda q: q.order)
         answers_raw = body.get("answers", {})
-        logger.debug(f"[DEBUG yes_no] answers_raw received: {answers_raw}")
+        logger.info(f"[DEBUG yes_no] answers_raw received: {answers_raw}")
 
         # --- Validate answers ---
         errors = []
