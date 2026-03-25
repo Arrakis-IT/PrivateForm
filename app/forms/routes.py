@@ -27,7 +27,7 @@ from app.core.database import get_db
 from app.core.settings import settings
 from app.core.models import Doctor, Form, Question, VALID_QUESTION_TYPES
 from app.auth.utils import get_current_doctor_id
-from app.core.logging import get_logger
+from app.core.logging import get_logger, sanitize_log
 
 logger = get_logger("forms.routes")
 
@@ -260,7 +260,7 @@ async def new_form_submit(request: Request, db: Session = Depends(get_db),
     question_errors = validate_questions(questions_data)
 
     if errors or question_errors:
-        logger.warning(f"Validation errors when creating form: errors={errors}, question_errors={question_errors}")
+        logger.warning(f"Validation errors when creating form: errors={sanitize_log(errors)}, question_errors={sanitize_log(question_errors)}")
         all_errors = {**errors}
         if question_errors:
             all_errors["question_errors"] = question_errors
@@ -301,7 +301,7 @@ async def new_form_submit(request: Request, db: Session = Depends(get_db),
         db.add(question)
 
     db.commit()
-    logger.info(f"Form created: {new_form.name} by doctor {doctor_id}")
+    logger.info(f"Form created: {sanitize_log(new_form.name)} by doctor {doctor_id}")
 
     # Return JSON with created form ID
     return JSONResponse(content={"success": True, "form_id": new_form.id})
@@ -418,7 +418,7 @@ async def edit_form_submit(request: Request, form_id: str, db: Session = Depends
         db.add(question)
 
     db.commit()
-    logger.info(f"Form edited: {form.name} by doctor {doctor_id}")
+    logger.info(f"Form edited: {sanitize_log(form.name)} by doctor {doctor_id}")
 
     # Return JSON with success; notify frontend if form was deactivated
     return JSONResponse(content={"success": True, "form_id": form_id, "was_deactivated": was_active})
@@ -438,7 +438,7 @@ async def toggle_form(form_id: str, request: Request, db: Session = Depends(get_
     form.is_active = not form.is_active
     db.commit()
 
-    logger.info(f"Form {'activated' if form.is_active else 'deactivated'}: {form.name}")
+    logger.info(f"Form {'activated' if form.is_active else 'deactivated'}: {sanitize_log(form.name)}")
     return JSONResponse(content={"is_active": form.is_active})
 
 
@@ -463,7 +463,7 @@ async def delete_form(form_id: str, request: Request, db: Session = Depends(get_
     db.delete(form)
     db.commit()
 
-    logger.info(f"Form deleted: {form.name} by doctor {doctor_id}")
+    logger.info(f"Form deleted: {sanitize_log(form.name)} by doctor {doctor_id}")
     return JSONResponse(content={"success": True})
 
 

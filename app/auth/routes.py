@@ -37,7 +37,7 @@ from app.email.service import (
     send_verification_email, send_password_reset_email,
     send_password_changed_email,
 )
-from app.core.logging import get_logger
+from app.core.logging import get_logger, sanitize_log
 
 logger = get_logger("auth.routes")
 
@@ -173,7 +173,7 @@ async def register_submit(request: Request, db: Session = Depends(get_db)):
         }, status_code=429)
 
     if errors:
-        logger.warning(f"Validation errors in registration: {errors}")
+        logger.warning(f"Validation errors in registration: {sanitize_log(errors)}")
         return templates.TemplateResponse(request, "auth/register.html", {
             "specialties": MEDICAL_SPECIALTIES,
             "countries": AVAILABLE_COUNTRIES,
@@ -233,7 +233,7 @@ async def register_submit(request: Request, db: Session = Depends(get_db)):
         verification_url=verification_url,
     )
 
-    logger.info(f"New doctor registered: {doctor.email}")
+    logger.info(f"New doctor registered: {sanitize_log(doctor.email)}")
     return RedirectResponse(url=f"/verify-pending?email={email}", status_code=302)
 
 
@@ -327,7 +327,7 @@ async def verify_email(request: Request, db: Session = Depends(get_db)):
         doctor.is_verified = True
     db.commit()
 
-    logger.info(f"Email verified: {doctor.email if doctor else 'unknown'}")
+    logger.info(f"Email verified: {sanitize_log(doctor.email) if doctor else 'unknown'}")
     return templates.TemplateResponse(request, "auth/verify_result.html", {
         "success": True, "context": "verification", "expired": False, "email": "",
     })
@@ -394,7 +394,7 @@ async def login_submit(request: Request, db: Session = Depends(get_db)):
     response = RedirectResponse(url="/doctor/home", status_code=302)
     set_auth_cookie(response, access_token)
 
-    logger.info(f"Successful login: {doctor.email}")
+    logger.info(f"Successful login: {sanitize_log(doctor.email)}")
     return response
 
 
@@ -538,7 +538,7 @@ async def reset_password_submit(request: Request, db: Session = Depends(get_db))
             doctor_name=f"{doctor.first_name} {doctor.last_name}",
             change_timestamp=change_timestamp,
         )
-        logger.info(f"Password changed: {doctor.email}")
+        logger.info(f"Password changed: {sanitize_log(doctor.email)}")
 
     return RedirectResponse(url="/login", status_code=302)
 

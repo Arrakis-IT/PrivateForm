@@ -72,5 +72,13 @@ def get_logger(name: str) -> logging.Logger:
     return logger
 
 
+def sanitize_log(value: str) -> str:
+    """
+    Sanitizes user-controlled values before logging to prevent log injection.
+    Replaces newline and carriage return characters to avoid fake log entries.
+    """
+    return str(value).replace("\n", "\\n").replace("\r", "\\r")
+
+
 # Main application logger
 app_logger = get_logger("privateform")
