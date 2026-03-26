@@ -29,14 +29,12 @@ RUN pip install --no-cache-dir -r requirements.lock
 # --- Stage 2: Final production image ---
 FROM python:3.12-slim
 
-# Install runtime dependencies + Unicode fonts
+# Install runtime dependencies + Unicode fonts, upgrade pip
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     fonts-dejavu-core \
-    && rm -rf /var/lib/apt/lists/*
-
-# Upgrade pip in final image
-RUN pip install --no-cache-dir --upgrade pip
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir --upgrade pip
 
 # Copy installed dependencies from builder
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
@@ -50,12 +48,10 @@ COPY migrations/ ./migrations/
 COPY alembic.ini ./
 COPY scripts/ ./scripts/
 
-# Create logs directory
-RUN mkdir -p /app/logs && chmod 750 /app/logs
-
-# Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-RUN chown -R appuser:appuser /app
+# Create logs directory, non-root user, and set ownership
+RUN mkdir -p /app/logs && chmod 750 /app/logs \
+    && groupadd -r appuser && useradd -r -g appuser appuser \
+    && chown -R appuser:appuser /app
 USER appuser
 
 # Expose port
