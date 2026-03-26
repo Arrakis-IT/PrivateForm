@@ -35,6 +35,10 @@ logger = get_logger("forms.routes")
 DbSession = Annotated[Session, Depends(get_db)]
 CurrentDoctorId = Annotated[str, Depends(get_current_doctor_id)]
 
+LOGIN_URL = "/login"
+DOCTOR_HOME_URL = "/doctor/home"
+ERR_FORM_NOT_FOUND = "Formulaire non trouvé"
+
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
@@ -178,7 +182,7 @@ async def home(request: Request, db: DbSession,
                doctor_id: CurrentDoctorId):
     doctor = get_doctor(db, doctor_id)
     if not doctor:
-        return RedirectResponse(url="/login", status_code=302)
+        return RedirectResponse(url=LOGIN_URL, status_code=302)
 
     forms = db.query(Form).filter(Form.doctor_id == doctor_id).order_by(Form.updated_at.desc()).all()
     forms_data = [form_to_dict(f) for f in forms]
@@ -205,12 +209,12 @@ async def new_form_page(request: Request, db: DbSession,
                         doctor_id: CurrentDoctorId):
     doctor = get_doctor(db, doctor_id)
     if not doctor:
-        return RedirectResponse(url="/login", status_code=302)
+        return RedirectResponse(url=LOGIN_URL, status_code=302)
 
     # Verify limit
     total_forms = count_forms(db, doctor_id)
     if total_forms >= doctor.form_limit:
-        return RedirectResponse(url="/doctor/home", status_code=302)
+        return RedirectResponse(url=DOCTOR_HOME_URL, status_code=302)
 
     return templates.TemplateResponse(request, "forms/editor.html", {
         "doctor": doctor,
@@ -232,12 +236,12 @@ async def new_form_submit(request: Request, db: DbSession,
                           doctor_id: CurrentDoctorId):
     doctor = get_doctor(db, doctor_id)
     if not doctor:
-        return RedirectResponse(url="/login", status_code=302)
+        return RedirectResponse(url=LOGIN_URL, status_code=302)
 
     # Verify limit
     total_forms = count_forms(db, doctor_id)
     if total_forms >= doctor.form_limit:
-        return RedirectResponse(url="/doctor/home", status_code=302)
+        return RedirectResponse(url=DOCTOR_HOME_URL, status_code=302)
 
     # Receive JSON instead of form data
     try:
@@ -334,7 +338,7 @@ async def edit_form_page(request: Request, form_id: str, db: DbSession,
     form = get_form(db, form_id, doctor_id)
 
     if not doctor or not form:
-        return RedirectResponse(url="/doctor/home", status_code=302)
+        return RedirectResponse(url=DOCTOR_HOME_URL, status_code=302)
 
     questions = [question_to_dict(q) for q in form.questions]
 
@@ -360,7 +364,7 @@ async def edit_form_submit(request: Request, form_id: str, db: DbSession,
     form = get_form(db, form_id, doctor_id)
 
     if not doctor or not form:
-        return RedirectResponse(url="/doctor/home", status_code=302)
+        return RedirectResponse(url=DOCTOR_HOME_URL, status_code=302)
 
     # Receive JSON instead of form data
     try:
@@ -449,7 +453,7 @@ async def toggle_form(form_id: str, request: Request, db: DbSession,
                       doctor_id: CurrentDoctorId):
     form = get_form(db, form_id, doctor_id)
     if not form:
-        return JSONResponse(content={"error": "Formulaire non trouvé"}, status_code=404)
+        return JSONResponse(content={"error": ERR_FORM_NOT_FOUND}, status_code=404)
 
     form.is_active = not form.is_active
     db.commit()
@@ -467,7 +471,7 @@ async def delete_form(form_id: str, request: Request, db: DbSession,
                       doctor_id: CurrentDoctorId):
     form = get_form(db, form_id, doctor_id)
     if not form:
-        return JSONResponse(content={"error": "Formulaire non trouvé"}, status_code=404)
+        return JSONResponse(content={"error": ERR_FORM_NOT_FOUND}, status_code=404)
 
     # Example forms cannot be deleted (they are needed to always have at least one form)
     if form.is_example:
@@ -492,7 +496,7 @@ async def get_share_data(form_id: str, db: DbSession,
                          doctor_id: CurrentDoctorId):
     form = get_form(db, form_id, doctor_id)
     if not form:
-        return JSONResponse(content={"error": "Formulaire non trouvé"}, status_code=404)
+        return JSONResponse(content={"error": ERR_FORM_NOT_FOUND}, status_code=404)
 
     url = build_form_url(form.slug)
     qr_base64 = generate_qr_base64(url)
@@ -516,7 +520,7 @@ async def download_qr(form_id: str, db: DbSession,
 
     form = get_form(db, form_id, doctor_id)
     if not form:
-        return RedirectResponse(url="/doctor/home", status_code=302)
+        return RedirectResponse(url=DOCTOR_HOME_URL, status_code=302)
 
     url = build_form_url(form.slug)
     qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=10, border=4)

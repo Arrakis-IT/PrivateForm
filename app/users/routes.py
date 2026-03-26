@@ -39,6 +39,9 @@ logger = get_logger("users.routes")
 DbSession = Annotated[Session, Depends(get_db)]
 CurrentDoctorId = Annotated[str, Depends(get_current_doctor_id)]
 
+ERR_INVALID_DATA = "Données invalides."
+ERR_DOCTOR_NOT_FOUND = "Médecin non trouvé."
+
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
@@ -109,11 +112,11 @@ async def profile_update(
     try:
         body = await request.json()
     except Exception:
-        return JSONResponse({"success": False, "error": "Données invalides."}, status_code=400)
+        return JSONResponse({"success": False, "error": ERR_INVALID_DATA}, status_code=400)
 
     doctor = get_doctor(db, doctor_id)
     if not doctor:
-        return JSONResponse({"success": False, "error": "Médecin non trouvé."}, status_code=404)
+        return JSONResponse({"success": False, "error": ERR_DOCTOR_NOT_FOUND}, status_code=404)
 
     # Editable fields
     last_name = (body.get("last_name") or "").strip()
@@ -164,11 +167,11 @@ async def change_password(
     try:
         body = await request.json()
     except Exception:
-        return JSONResponse({"success": False, "error": "Données invalides."}, status_code=400)
+        return JSONResponse({"success": False, "error": ERR_INVALID_DATA}, status_code=400)
 
     doctor = get_doctor(db, doctor_id)
     if not doctor:
-        return JSONResponse({"success": False, "error": "Médecin non trouvé."}, status_code=404)
+        return JSONResponse({"success": False, "error": ERR_DOCTOR_NOT_FOUND}, status_code=404)
 
     current_password = body.get("current_password", "")
     new_password = body.get("new_password", "")
@@ -216,11 +219,11 @@ async def change_pdf_password(
     try:
         body = await request.json()
     except Exception:
-        return JSONResponse({"success": False, "error": "Données invalides."}, status_code=400)
+        return JSONResponse({"success": False, "error": ERR_INVALID_DATA}, status_code=400)
 
     doctor = get_doctor(db, doctor_id)
     if not doctor:
-        return JSONResponse({"success": False, "error": "Médecin non trouvé."}, status_code=404)
+        return JSONResponse({"success": False, "error": ERR_DOCTOR_NOT_FOUND}, status_code=404)
 
     new_pdf_password = body.get("new_pdf_password", "")
     confirm_pdf_password = body.get("confirm_pdf_password", "")
@@ -254,11 +257,11 @@ async def delete_account(
     try:
         body = await request.json()
     except Exception:
-        return JSONResponse({"success": False, "error": "Données invalides."}, status_code=400)
+        return JSONResponse({"success": False, "error": ERR_INVALID_DATA}, status_code=400)
 
     doctor = get_doctor(db, doctor_id)
     if not doctor:
-        return JSONResponse({"success": False, "error": "Médecin non trouvé."}, status_code=404)
+        return JSONResponse({"success": False, "error": ERR_DOCTOR_NOT_FOUND}, status_code=404)
 
     # Require password confirmation
     password = body.get("password", "")

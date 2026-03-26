@@ -14,6 +14,8 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+FK_DOCTOR_ID = "doctors.id"
+
 
 def upgrade() -> None:
     # -------------------------------------------------------------------------
@@ -53,7 +55,7 @@ def upgrade() -> None:
         sa.Column("submission_count", sa.Integer(), nullable=True, server_default=sa.text("0")),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=True),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=True),
-        sa.ForeignKeyConstraint(["doctor_id"], ["doctors.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["doctor_id"], [FK_DOCTOR_ID], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_forms_slug"), "forms", ["slug"], unique=True)
@@ -88,7 +90,7 @@ def upgrade() -> None:
         sa.Column("is_used", sa.Boolean(), nullable=True, server_default=sa.text("false")),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=True),
-        sa.ForeignKeyConstraint(["doctor_id"], ["doctors.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["doctor_id"], [FK_DOCTOR_ID], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_verification_tokens_token"), "verification_tokens", ["token"], unique=True)
@@ -104,7 +106,7 @@ def upgrade() -> None:
         sa.Column("is_used", sa.Boolean(), nullable=True, server_default=sa.text("false")),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=True),
-        sa.ForeignKeyConstraint(["doctor_id"], ["doctors.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["doctor_id"], [FK_DOCTOR_ID], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_password_reset_tokens_token"), "password_reset_tokens", ["token"], unique=True)
