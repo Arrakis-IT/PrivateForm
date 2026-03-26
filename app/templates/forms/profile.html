@@ -291,7 +291,7 @@ function checkNewPw() {
     document.getElementById("pw-c-len").classList.toggle("ok", v.length >= 8);
     document.getElementById("pw-c-up").classList.toggle("ok",  /[A-Z]/.test(v));
     document.getElementById("pw-c-lo").classList.toggle("ok",  /[a-z]/.test(v));
-    document.getElementById("pw-c-num").classList.toggle("ok", /[0-9]/.test(v));
+    document.getElementById("pw-c-num").classList.toggle("ok", /\d/.test(v));
 }
 
 // --------------------------------------------------------------------------
