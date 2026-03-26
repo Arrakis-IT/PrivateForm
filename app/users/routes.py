@@ -59,7 +59,7 @@ def get_doctor(db: Session, doctor_id: str) -> Doctor | None:
 def _validate_profile_fields(last_name: str, first_name: str, specialty: str, country: str) -> str | None:
     if not last_name or not first_name:
         return "Nom et prénom sont obligatoires."
-    if specialty and specialty not in [s for s in MEDICAL_SPECIALTIES]:
+    if specialty and specialty not in MEDICAL_SPECIALTIES:
         return "Spécialité invalide."
     if country and country not in [c[0] for c in AVAILABLE_COUNTRIES]:
         return "Pays invalide."

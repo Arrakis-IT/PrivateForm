@@ -352,8 +352,8 @@ function collectAnswers() {
 // Submit
 // --------------------------------------------------------------------------
 function getCaptchaToken() {
-    if (!window.hcaptcha) return "";
-    try { return hcaptcha.getResponse(); } catch(e) { return ""; }
+    if (!globalThis.hcaptcha) return "";
+    try { return hcaptcha.getResponse(); } catch { return ""; }
 }
 
 function showGeneralError(msg) {
@@ -369,7 +369,7 @@ function handleSubmitError(data) {
     } else if (data.error) {
         showGeneralError(data.error);
     }
-    if (window.hcaptcha) { try { hcaptcha.reset(); } catch(e){} }
+    if (globalThis.hcaptcha) { try { hcaptcha.reset(); } catch(e){} }
 }
 
 async function submitForm() {
@@ -382,7 +382,7 @@ async function submitForm() {
     document.getElementById("submit-btn").disabled = true;
 
     try {
-        const res = await fetch(window.location.pathname + "/submit", {
+        const res = await fetch(globalThis.location.pathname + "/submit", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(payload),

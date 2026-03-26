@@ -232,7 +232,7 @@ async function saveProfile() {
         });
         const data = await res.json();
         showToast(data.message || (res.ok ? "Profil mis à jour." : "Erreur."), res.ok ? "success" : "error");
-    } catch(e) { showToast("Erreur réseau.", "error"); }
+    } catch { showToast("Erreur réseau.", "error"); }
 }
 
 // --------------------------------------------------------------------------
@@ -253,11 +253,11 @@ async function changePassword() {
         const data = await res.json();
         if (res.ok) {
             showToast(data.message, "success");
-            if (data.logout) setTimeout(() => { window.location.href = "/login"; }, 2000);
+            if (data.logout) setTimeout(() => { globalThis.location.href = "/login"; }, 2000);
         } else {
             showToast(data.error || "Erreur.", "error");
         }
-    } catch(e) { showToast("Erreur réseau.", "error"); }
+    } catch { showToast("Erreur réseau.", "error"); }
 }
 
 // --------------------------------------------------------------------------
@@ -280,7 +280,7 @@ async function changePdfPassword() {
             document.getElementById("pdf-pw-new").value = "";
             document.getElementById("pdf-pw-confirm").value = "";
         }
-    } catch(e) { showToast("Erreur réseau.", "error"); }
+    } catch { showToast("Erreur réseau.", "error"); }
 }
 
 // --------------------------------------------------------------------------
@@ -329,11 +329,11 @@ async function deleteAccount() {
         });
         const data = await res.json();
         if (res.ok) {
-            window.location.href = "/login";
+            globalThis.location.href = "/login";
         } else {
             showToast(data.error || "Erreur.", "error");
         }
-    } catch(e) { showToast("Erreur réseau.", "error"); }
+    } catch { showToast("Erreur réseau.", "error"); }
 }
 </script>
 {% endblock %}

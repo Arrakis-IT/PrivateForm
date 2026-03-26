@@ -14,12 +14,14 @@
 
 set -e
 
+SEPARATOR="=============================================="
+
 DEPLOY_DIR="/opt/privateform"
 SECRETS_DIR="${DEPLOY_DIR}/secrets"
 
-echo "=============================================="
+echo "$SEPARATOR"
 echo "  PrivateForm — Deploy"
-echo "=============================================="
+echo "$SEPARATOR"
 echo ""
 
 # ---------------------------------------------------------------
@@ -205,14 +207,14 @@ echo ""
 # ---------------------------------------------------------------
 # Final status
 # ---------------------------------------------------------------
-echo "=============================================="
+echo "$SEPARATOR"
 echo "  Container status:"
-echo "=============================================="
+echo "$SEPARATOR"
 docker compose -f docker-compose.yml ps
 echo ""
-echo "=============================================="
+echo "$SEPARATOR"
 echo "  ✓ Deploy completed."
-echo "=============================================="
+echo "$SEPARATOR"
 echo ""
 echo "Next steps (if first time):"
 echo "  1. Verify APP_DOMAIN in .env matches your domain"
