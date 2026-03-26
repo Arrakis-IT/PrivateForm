@@ -195,6 +195,45 @@ class PrivateFormPDF(FPDF):
             logger.error(f"Error adding watermark: {e}")
 
 
+QUESTION_TYPE_LABELS = {
+    "text": "Texte",
+    "text_long": "Texte long",
+    "yes_no": "Oui / Non",
+    "select": "Sélection unique",
+    "multiselect": "Sélection multiple",
+    "date": "Date",
+    "number": "Nombre",
+    "email": "Email",
+    "phone": "Téléphone",
+    "scale": "Échelle 1-10",
+    "matricule": "Matricule CNS",
+}
+
+
+def _find_answer_value(answers: list[dict], question_id: str) -> str:
+    for ans in answers:
+        if ans["question_id"] == question_id:
+            return ans["value"]
+    return ""
+
+
+def _render_answer(pdf, question_type: str, answer_value, question: dict) -> None:
+    pdf.set_font("DejaVu", "", 10)
+    pdf.set_text_color(55, 65, 81)
+
+    if not answer_value and answer_value != 0:
+        pdf.set_text_color(156, 163, 175)
+        pdf.multi_cell(0, 5, "Non répondu")
+    elif question_type == "yes_no":
+        pdf.cell(0, 5, "Oui" if answer_value == "Oui" else "Non", new_x="LMARGIN", new_y="NEXT")
+    elif question_type == "multiselect" and isinstance(answer_value, list):
+        pdf.cell(0, 5, ", ".join(answer_value), new_x="LMARGIN", new_y="NEXT")
+    elif question_type == "scale":
+        pdf.cell(0, 5, str(answer_value), new_x="LMARGIN", new_y="NEXT")
+    else:
+        pdf.multi_cell(0, 5, str(answer_value))
+
+
 def generate_pdf(
     doctor_name: str,
     form_name: str,
@@ -218,90 +257,35 @@ def generate_pdf(
     pdf = PrivateFormPDF(doctor_name, form_name, submission_timestamp)
     pdf.add_page()
 
-    # Add watermark on first page
-    # Save current position
     current_y = pdf.get_y()
     pdf._add_watermark()
-    # Restore position to write content
     pdf.set_y(current_y)
 
-    # Write questions and answers
     for i, question in enumerate(questions):
-        question_id = question["id"]
-        question_text = question["text"]
-        question_type = question["question_type"]
-        is_required = question["is_required"]
+        answer_value = _find_answer_value(answers, question["id"])
 
-        # Find corresponding answer
-        answer_value = ""
-        for ans in answers:
-            if ans["question_id"] == question_id:
-                answer_value = ans["value"]
-                break
-
-        # Subtle alternating background
         if i % 2 == 0:
-            pdf.set_fill_color(249, 250, 251)  # Very light gray
+            pdf.set_fill_color(249, 250, 251)
             pdf.rect(12, pdf.get_y(), pdf.w - 24, 18, "F")
 
-        # Question number + text
         pdf.set_font("DejaVu", "B", 10)
         pdf.set_text_color(31, 41, 55)
+        obligatorio_text = " *" if question["is_required"] else ""
+        pdf.cell(0, 6, f"{i + 1}. {question['text']}{obligatorio_text}", new_x="LMARGIN", new_y="NEXT")
 
-        obligatorio_text = " *" if is_required else ""
-        pdf.cell(0, 6, f"{i + 1}. {question_text}{obligatorio_text}", new_x="LMARGIN", new_y="NEXT")
-
-        # Question type (small, gray)
-        type_labels = {
-            "text": "Texte",
-            "text_long": "Texte long",
-            "yes_no": "Oui / Non",
-            "select": "Sélection unique",
-            "multiselect": "Sélection multiple",
-            "date": "Date",
-            "number": "Nombre",
-            "email": "Email",
-            "phone": "Téléphone",
-            "scale": "Échelle 1-10",
-            "matricule": "Matricule CNS",
-        }
         pdf.set_font("DejaVu", "I", 8)
         pdf.set_text_color(156, 163, 175)
-        pdf.cell(0, 4, f"Type : {type_labels.get(question_type, question_type)}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 4, f"Type : {QUESTION_TYPE_LABELS.get(question['question_type'], question['question_type'])}", new_x="LMARGIN", new_y="NEXT")
 
-        # Answer
-        pdf.set_font("DejaVu", "", 10)
-        pdf.set_text_color(55, 65, 81)
-
-        if not answer_value and answer_value != 0:
-            pdf.set_text_color(156, 163, 175)
-            pdf.multi_cell(0, 5, "Non répondu")
-        elif question_type == "yes_no":
-            label = "Oui" if answer_value == "Oui" else "Non"
-            pdf.cell(0, 5, label, new_x="LMARGIN", new_y="NEXT")
-        elif question_type == "multiselect" and isinstance(answer_value, list):
-            pdf.cell(0, 5, ", ".join(answer_value), new_x="LMARGIN", new_y="NEXT")
-        elif question_type == "scale":
-            # Show labels if they exist
-            scale_label_1 = question.get("scale_label_1", "")
-            scale_label_10 = question.get("scale_label_10", "")
-            scale_text = str(answer_value)
-#            if scale_label_1 or scale_label_10:
-#                scale_text += f"  ({scale_label_1} ← → {scale_label_10})"
-            pdf.cell(0, 5, scale_text, new_x="LMARGIN", new_y="NEXT")
-        else:
-            pdf.multi_cell(0, 5, str(answer_value))
+        _render_answer(pdf, question["question_type"], answer_value, question)
 
         pdf.ln(4)
 
-        # If page is filling up, add new page with watermark
         if pdf.get_y() > pdf.h - 55:
             pdf.add_page()
             pdf._add_watermark()
 
-    # Generate PDF bytes
-    pdf_bytes = pdf.output()
-    return pdf_bytes
+    return pdf.output()
 
 
 def encrypt_pdf(pdf_bytes: bytes, password: str) -> bytes:

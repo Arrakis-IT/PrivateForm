@@ -75,101 +75,133 @@ def validate_answer(question: dict, answer) -> str | None:
     Validates an individual answer.
     Returns None if valid, or an error string.
     """
-    q_type = question["question_type"]
-    is_required = question["is_required"]
     q_text = question["text"]
 
-    # --- Required fields ---
-    if is_required:
-        if answer is None or (isinstance(answer, str) and answer.strip() == ""):
-            return f"La réponse à « {q_text} » est obligatoire."
-        if isinstance(answer, list) and len(answer) == 0:
-            return f"La réponse à « {q_text} » est obligatoire."
+    if question["is_required"] and _is_empty(answer):
+        return f"La réponse à « {q_text} » est obligatoire."
 
-    # If not required and empty, it's valid
-    if answer is None or (isinstance(answer, str) and answer.strip() == ""):
-        return None
-    if isinstance(answer, list) and len(answer) == 0:
+    if _is_empty(answer):
         return None
 
-    # --- Validations by type ---
-    if q_type == "text":
-        if not isinstance(answer, str):
-            return f"Format invalide pour « {q_text} »."
+    validator = _ANSWER_VALIDATORS.get(question["question_type"])
+    return validator(answer, q_text, question) if validator else None
 
-    elif q_type == "text_long":
-        if not isinstance(answer, str):
-            return f"Format invalide pour « {q_text} »."
-        if len(answer) > MAX_LONG_TEXT_CHARS:
-            return f"« {q_text} » dépasse le maximum de {MAX_LONG_TEXT_CHARS} caractères."
 
-    elif q_type == "yes_no":
-        if answer not in ("oui", "non"):
-            return f"Réponse invalide pour « {q_text} ». Choisissez Oui ou Non."
+def _is_empty(answer) -> bool:
+    if answer is None:
+        return True
+    if isinstance(answer, str) and answer.strip() == "":
+        return True
+    return isinstance(answer, list) and len(answer) == 0
 
-    elif q_type == "select":
-        options = question.get("options", [])
-        if answer not in options:
-            return f"Option invalide pour « {q_text} »."
 
-    elif q_type == "multiselect":
-        options = question.get("options", [])
-        if not isinstance(answer, list):
-            return f"Format invalide pour « {q_text} »."
-        for item in answer:
-            if item not in options:
-                return f"Option invalide « {item} » pour « {q_text} »."
-
-    elif q_type == "date":
-        if not isinstance(answer, str):
-            return f"Date invalide pour « {q_text} »."
-        try:
-            datetime.strptime(answer, "%Y-%m-%d")
-        except ValueError:
-            return f"Date invalide pour « {q_text} »."
-
-    elif q_type == "number":
-        if isinstance(answer, str):
-            # Replace comma with dot (French convention)
-            answer = answer.replace(",", ".")
-        try:
-            val = float(answer)
-            allow_decimals = question.get("allow_decimals", False)
-            if not allow_decimals and val != int(val):
-                return f"« {q_text} » doit être un nombre entier."
-        except (ValueError, TypeError):
-            return f"Nombre invalide pour « {q_text} »."
-
-    elif q_type == "email":
-        if not isinstance(answer, str) or "@" not in answer or "." not in answer.split("@")[-1]:
-            return f"Email invalide pour « {q_text} »."
-
-    elif q_type == "phone":
-        if not isinstance(answer, str):
-            return f"Numéro de téléphone invalide pour « {q_text} »."
-        # Flexible format: allow +, spaces, dashes, digits
-        cleaned = answer.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-        if cleaned.startswith("+"):
-            cleaned = cleaned[1:]
-        if not cleaned.isdigit() or len(cleaned) < 7:
-            return f"Numéro de téléphone invalide pour « {q_text} »."
-
-    elif q_type == "scale":
-        try:
-            val = int(answer)
-            if val < 1 or val > 10:
-                return f"« {q_text} » doit être entre 1 et 10."
-        except (ValueError, TypeError):
-            return f"Valeur invalide pour « {q_text} »."
-
-    elif q_type == "matricule":
-        if not isinstance(answer, str):
-            return f"Matricule invalide pour « {q_text} »."
-        digits_only = answer.replace(" ", "").replace("-", "")
-        if not digits_only.isdigit() or len(digits_only) != 11:
-            return f"Le matricule doit contenir exactement 11 chiffres."
-
+def _validate_type_text(answer, q_text: str, question: dict) -> str | None:
+    if not isinstance(answer, str):
+        return f"Format invalide pour « {q_text} »."
     return None
+
+
+def _validate_type_text_long(answer, q_text: str, question: dict) -> str | None:
+    if not isinstance(answer, str):
+        return f"Format invalide pour « {q_text} »."
+    if len(answer) > MAX_LONG_TEXT_CHARS:
+        return f"« {q_text} » dépasse le maximum de {MAX_LONG_TEXT_CHARS} caractères."
+    return None
+
+
+def _validate_type_yes_no(answer, q_text: str, question: dict) -> str | None:
+    if answer not in ("oui", "non"):
+        return f"Réponse invalide pour « {q_text} ». Choisissez Oui ou Non."
+    return None
+
+
+def _validate_type_select(answer, q_text: str, question: dict) -> str | None:
+    if answer not in question.get("options", []):
+        return f"Option invalide pour « {q_text} »."
+    return None
+
+
+def _validate_type_multiselect(answer, q_text: str, question: dict) -> str | None:
+    if not isinstance(answer, list):
+        return f"Format invalide pour « {q_text} »."
+    options = question.get("options", [])
+    for item in answer:
+        if item not in options:
+            return f"Option invalide « {item} » pour « {q_text} »."
+    return None
+
+
+def _validate_type_date(answer, q_text: str, question: dict) -> str | None:
+    if not isinstance(answer, str):
+        return f"Date invalide pour « {q_text} »."
+    try:
+        datetime.strptime(answer, "%Y-%m-%d")
+    except ValueError:
+        return f"Date invalide pour « {q_text} »."
+    return None
+
+
+def _validate_type_number(answer, q_text: str, question: dict) -> str | None:
+    if isinstance(answer, str):
+        answer = answer.replace(",", ".")  # French decimal convention
+    try:
+        val = float(answer)
+        if not question.get("allow_decimals", False) and val != int(val):
+            return f"« {q_text} » doit être un nombre entier."
+    except (ValueError, TypeError):
+        return f"Nombre invalide pour « {q_text} »."
+    return None
+
+
+def _validate_type_email(answer, q_text: str, question: dict) -> str | None:
+    if not isinstance(answer, str) or "@" not in answer or "." not in answer.split("@")[-1]:
+        return f"Email invalide pour « {q_text} »."
+    return None
+
+
+def _validate_type_phone(answer, q_text: str, question: dict) -> str | None:
+    if not isinstance(answer, str):
+        return f"Numéro de téléphone invalide pour « {q_text} »."
+    cleaned = answer.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+    if cleaned.startswith("+"):
+        cleaned = cleaned[1:]
+    if not cleaned.isdigit() or len(cleaned) < 7:
+        return f"Numéro de téléphone invalide pour « {q_text} »."
+    return None
+
+
+def _validate_type_scale(answer, q_text: str, question: dict) -> str | None:
+    try:
+        val = int(answer)
+        if val < 1 or val > 10:
+            return f"« {q_text} » doit être entre 1 et 10."
+    except (ValueError, TypeError):
+        return f"Valeur invalide pour « {q_text} »."
+    return None
+
+
+def _validate_type_matricule(answer, q_text: str, question: dict) -> str | None:
+    if not isinstance(answer, str):
+        return f"Matricule invalide pour « {q_text} »."
+    digits_only = answer.replace(" ", "").replace("-", "")
+    if not digits_only.isdigit() or len(digits_only) != 11:
+        return "Le matricule doit contenir exactement 11 chiffres."
+    return None
+
+
+_ANSWER_VALIDATORS = {
+    "text": _validate_type_text,
+    "text_long": _validate_type_text_long,
+    "yes_no": _validate_type_yes_no,
+    "select": _validate_type_select,
+    "multiselect": _validate_type_multiselect,
+    "date": _validate_type_date,
+    "number": _validate_type_number,
+    "email": _validate_type_email,
+    "phone": _validate_type_phone,
+    "scale": _validate_type_scale,
+    "matricule": _validate_type_matricule,
+}
 
 
 # =============================================================================
@@ -218,137 +250,100 @@ async def patient_form_page(request: Request, slug: str):
 # POST /f/{slug}/submit — Submit patient responses
 # =============================================================================
 
+def _collect_validated_answers(questions, answers_raw: dict) -> tuple[list, list]:
+    """Validates all answers. Returns (errors, validated_answers)."""
+    errors = []
+    validated_answers = []
+    for q in questions:
+        q_dict = question_to_patient_dict(q)
+        raw_answer = answers_raw.get(q.id)
+        if q.question_type == "number" and isinstance(raw_answer, str):
+            raw_answer = raw_answer.replace(",", ".")
+        error = validate_answer(q_dict, raw_answer)
+        if error:
+            errors.append(error)
+        else:
+            validated_answers.append({
+                "question_id": q.id,
+                "question_text": q.text,
+                "question_type": q.question_type,
+                "value": _format_answer_for_pdf(q.question_type, raw_answer, q_dict),
+            })
+    return errors, validated_answers
+
+
+async def _generate_and_send_pdf(form, doctor, questions, validated_answers: list, submission_timestamp: str):
+    """Generates PDF and sends it by email. Returns error JSONResponse or None on success."""
+    doctor_name = f"{doctor.first_name} {doctor.last_name}"
+    try:
+        encrypted_pdf = generate_and_encrypt_pdf(
+            doctor_name=doctor_name,
+            form_name=form.name,
+            questions=[question_to_patient_dict(q) for q in questions],
+            answers=validated_answers,
+            submission_timestamp=submission_timestamp,
+            encryption_password=decrypt_pdf_password(doctor.pdf_encryption_password),
+        )
+        pdf_filename = generate_pdf_filename(form.slug, datetime.now(LUX_TZ))
+    except Exception as e:
+        logger.error(f"Error generating PDF for form id={form.id}: {e}")
+        return JSONResponse({"success": False, "error": "Erreur d'envoi. Si le problème persiste, contactez votre médecin."}, status_code=500)
+
+    email_sent = await send_form_submission_email(
+        to_email=doctor.email,
+        doctor_name=doctor_name,
+        form_name=form.name,
+        submission_timestamp=submission_timestamp,
+        pdf_bytes=encrypted_pdf,
+        pdf_filename=pdf_filename,
+    )
+    del encrypted_pdf  # Never persisted to disk
+    if not email_sent:
+        logger.error(f"Email delivery failed for form id={form.id} — patient answers preserved on screen")
+        return JSONResponse({"success": False, "error": "L'envoi a échoué. Vos réponses sont conservées, veuillez réessayer dans quelques instants."}, status_code=500)
+    return None
+
+
 @router.post("/f/{slug}/submit", response_class=JSONResponse)
 async def patient_form_submit(request: Request, slug: str):
+    import json
     from app.core.database import SessionLocal
     db = SessionLocal()
 
     try:
-        # --- Rate limiting ---
         if not check_patient_submission(request):
-            return JSONResponse({
-                "success": False,
-                "error": "Trop de soumissions. Veuillez réessayer plus tard."
-            }, status_code=429)
+            return JSONResponse({"success": False, "error": "Trop de soumissions. Veuillez réessayer plus tard."}, status_code=429)
 
-        # --- Verify form ---
         form = get_form_by_slug(db, slug)
         if not form or not form.is_active:
-            return JSONResponse({
-                "success": False,
-                "error": "Ce formulaire n'est plus disponible."
-            }, status_code=404)
+            return JSONResponse({"success": False, "error": "Ce formulaire n'est plus disponible."}, status_code=404)
 
-        # --- Parse body ---
         try:
             body = await request.json()
         except Exception:
             return JSONResponse({"success": False, "error": "Données invalides."}, status_code=400)
 
-        # --- Verify maximum size (1MB) ---
-        import json
-        body_str = json.dumps(body)
-        if len(body_str.encode("utf-8")) > MAX_SUBMISSION_SIZE_KB * 1024:
+        if len(json.dumps(body).encode("utf-8")) > MAX_SUBMISSION_SIZE_KB * 1024:
             return JSONResponse({"success": False, "error": "La soumission dépasse la taille maximale autorisée."}, status_code=400)
 
-        # --- Verify hCaptcha ---
-        captcha_token = body.get("hcaptcha_token", "")
         if settings.HCAPTCHA_SECRET_KEY and settings.HCAPTCHA_SECRET_KEY != "your_hcaptcha_secret_key_here":
-            captcha_valid = await _verify_hcaptcha(captcha_token)
-            if not captcha_valid:
+            if not await _verify_hcaptcha(body.get("hcaptcha_token", "")):
                 return JSONResponse({"success": False, "error": "Vérification de sécurité échouée."}, status_code=400)
 
-        # --- Get sorted questions ---
         questions = sorted(form.questions, key=lambda q: q.order)
-        answers_raw = body.get("answers", {})
-
-        # --- Validate answers ---
-        errors = []
-        validated_answers = []  # List of {question, answer} for the PDF
-
-        for q in questions:
-            q_dict = question_to_patient_dict(q)
-            raw_answer = answers_raw.get(q.id)
-
-            # Normalize
-            if q.question_type == "number" and isinstance(raw_answer, str):
-                raw_answer = raw_answer.replace(",", ".")
-
-            error = validate_answer(q_dict, raw_answer)
-            if error:
-                errors.append(error)
-            else:
-                # Format answer for the PDF
-                display_answer = _format_answer_for_pdf(q.question_type, raw_answer, q_dict)
-                validated_answers.append({
-                    "question_id": q.id,
-                    "question_text": q.text,
-                    "question_type": q.question_type,
-                    "value": display_answer,  # Change "answer" to "value"
-                })
-
+        errors, validated_answers = _collect_validated_answers(questions, body.get("answers", {}))
         if errors:
             return JSONResponse({"success": False, "errors": errors}, status_code=400)
 
-        # --- Generate timestamp ---
-        now_lux = datetime.now(LUX_TZ)
-        submission_timestamp = now_lux.strftime("%d/%m/%Y à %H:%M (CET)")
+        submission_timestamp = datetime.now(LUX_TZ).strftime("%d/%m/%Y à %H:%M (CET)")
+        error_response = await _generate_and_send_pdf(form, form.doctor, questions, validated_answers, submission_timestamp)
+        if error_response:
+            return error_response
 
-        # --- Generate and encrypt PDF ---
-        doctor = form.doctor
-        doctor_name = f"{doctor.first_name} {doctor.last_name}"
-
-        try:
-            encrypted_pdf = generate_and_encrypt_pdf(
-                doctor_name=doctor_name,
-                form_name=form.name,
-                questions=[question_to_patient_dict(q) for q in questions],
-                answers=validated_answers,
-                submission_timestamp=submission_timestamp,
-                encryption_password=decrypt_pdf_password(doctor.pdf_encryption_password),
-            )
-            pdf_filename = generate_pdf_filename(form.slug, now_lux)
-
-            # LOCAL only: save pdf on /temp for debugging
-            # import os
-            # pdf_path = f"/tmp/{pdf_filename}"
-            # with open(pdf_path, "wb") as f:
-            #     f.write(encrypted_pdf)
-            # logger.info(f"PDF temporarily saved at {pdf_path}")
-        except Exception as e:
-            logger.error(f"Error generating PDF for form id={form.id}: {e}")
-            return JSONResponse({"success": False, "error": "Erreur d'envoi. Si le problème persiste, contactez votre médecin."}, status_code=500)
-
-        # --- Send email to doctor ---
-        email_sent = await send_form_submission_email(
-            to_email=doctor.email,
-            doctor_name=doctor_name,
-            form_name=form.name,
-            submission_timestamp=submission_timestamp,
-            pdf_bytes=encrypted_pdf,
-            pdf_filename=pdf_filename,
-        )
-        if not email_sent:
-            logger.error(f"Email delivery failed for form id={form.id} — patient answers preserved on screen")
-            return JSONResponse({
-                "success": False,
-                "error": "L'envoi a échoué. Vos réponses sont conservées, veuillez réessayer dans quelques instants.",
-            }, status_code=500)
-
-        # --- PDF destroyed (never saved to disk) ---
-        del encrypted_pdf
-
-        # --- Increment counter ---
         form.submission_count += 1
         db.commit()
-
         logger.info(f"Form id={form.id} submitted successfully. Total submissions: {form.submission_count}")
-
-        # --- Successful response ---
-        return JSONResponse({
-            "success": True,
-            "timestamp": submission_timestamp,
-        })
+        return JSONResponse({"success": True, "timestamp": submission_timestamp})
 
     finally:
         db.close()
@@ -358,50 +353,55 @@ async def patient_form_submit(request: Request, slug: str):
 # Internal helpers
 # =============================================================================
 
+def _fmt_yes_no(answer, q_dict: dict) -> str:
+    return "Oui" if answer == "oui" else "Non"
+
+
+def _fmt_multiselect(answer, q_dict: dict) -> str:
+    if isinstance(answer, list):
+        return ", ".join(answer) if answer else "—"
+    return str(answer)
+
+
+def _fmt_number(answer, q_dict: dict) -> str:
+    try:
+        val = float(str(answer).replace(",", "."))
+        if q_dict.get("allow_decimals", False):
+            return f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", " ")
+        return f"{int(val):,}".replace(",", " ")
+    except (ValueError, TypeError):
+        return str(answer)
+
+
+def _fmt_date(answer, q_dict: dict) -> str:
+    try:
+        return datetime.strptime(str(answer), "%Y-%m-%d").strftime("%d/%m/%Y")
+    except ValueError:
+        return str(answer)
+
+
+def _fmt_scale(answer, q_dict: dict) -> str:
+    label_1 = q_dict.get("scale_label_1", "")
+    label_10 = q_dict.get("scale_label_10", "")
+    labels = f" ({label_1} → {label_10})" if label_1 and label_10 else ""
+    return f"{answer}/10{labels}"
+
+
+_PDF_FORMATTERS = {
+    "yes_no": _fmt_yes_no,
+    "multiselect": _fmt_multiselect,
+    "number": _fmt_number,
+    "date": _fmt_date,
+    "scale": _fmt_scale,
+}
+
+
 def _format_answer_for_pdf(question_type: str, answer, q_dict: dict) -> str:
     """Format the answer for display in the PDF."""
     if answer is None:
         return "—"
-
-    if question_type == "yes_no":
-        return "Oui" if answer == "oui" else "Non"
-
-    if question_type == "multiselect":
-        if isinstance(answer, list):
-            return ", ".join(answer) if answer else "—"
-        return str(answer)
-
-    if question_type == "number":
-        try:
-            val = float(str(answer).replace(",", "."))
-            allow_decimals = q_dict.get("allow_decimals", False)
-            if allow_decimals:
-                # French format: comma as decimal separator
-                formatted = f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", " ")
-                return formatted
-            else:
-                # Integer with French thousands separator
-                formatted = f"{int(val):,}".replace(",", " ")
-                return formatted
-        except (ValueError, TypeError):
-            return str(answer)
-
-    if question_type == "date":
-        try:
-            dt = datetime.strptime(str(answer), "%Y-%m-%d")
-            return dt.strftime("%d/%m/%Y")
-        except ValueError:
-            return str(answer)
-
-    if question_type == "scale":
-        labels = ""
-        label_1 = q_dict.get("scale_label_1", "")
-        label_10 = q_dict.get("scale_label_10", "")
-        if label_1 and label_10:
-            labels = f" ({label_1} → {label_10})"
-        return f"{answer}/10{labels}"
-
-    return str(answer)
+    formatter = _PDF_FORMATTERS.get(question_type)
+    return formatter(answer, q_dict) if formatter else str(answer)
 
 
 async def _verify_hcaptcha(token: str) -> bool:

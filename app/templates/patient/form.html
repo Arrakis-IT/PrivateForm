@@ -350,23 +350,33 @@ function collectAnswers() {
 // --------------------------------------------------------------------------
 // Submit
 // --------------------------------------------------------------------------
+function getCaptchaToken() {
+    if (!window.hcaptcha) return "";
+    try { return hcaptcha.getResponse(); } catch(e) { return ""; }
+}
+
+function showGeneralError(msg) {
+    const el = document.getElementById("general-error");
+    el.textContent = msg;
+    el.classList.remove("hidden");
+}
+
+function handleSubmitError(data) {
+    document.getElementById("submit-btn").disabled = false;
+    if (data.errors && Array.isArray(data.errors)) {
+        showGeneralError(data.errors.join(" "));
+    } else if (data.error) {
+        showGeneralError(data.error);
+    }
+    if (window.hcaptcha) { try { hcaptcha.reset(); } catch(e){} }
+}
+
 async function submitForm() {
-    // Clear previous errors
     document.querySelectorAll(".error-msg").forEach(e => { e.classList.add("hidden"); e.textContent = ""; });
     document.getElementById("general-error").classList.add("hidden");
 
-    const answers = collectAnswers();
+    const payload = { answers: collectAnswers(), hcaptcha_token: getCaptchaToken() };
 
-    // Get hCaptcha token
-    let captchaToken = "";
-    if (window.hcaptcha) {
-        try { captchaToken = hcaptcha.getResponse(); }
-        catch(e) { captchaToken = ""; }
-    }
-
-    const payload = { answers, hcaptcha_token: captchaToken };
-
-    // Show spinner
     document.getElementById("spinner-overlay").classList.add("active");
     document.getElementById("submit-btn").disabled = true;
 
@@ -377,35 +387,19 @@ async function submitForm() {
             body: JSON.stringify(payload),
         });
         const data = await res.json();
-
         document.getElementById("spinner-overlay").classList.remove("active");
 
         if (res.ok && data.success) {
-            // Show success
             document.getElementById("questions-block").classList.add("hidden");
             document.getElementById("success-timestamp").textContent = `Envoyé le ${data.timestamp}`;
             document.getElementById("success-state").classList.remove("hidden");
         } else {
-            // Show errors
-            document.getElementById("submit-btn").disabled = false;
-
-            if (data.errors && Array.isArray(data.errors)) {
-                // Show general banner
-                document.getElementById("general-error").textContent = data.errors.join(" ");
-                document.getElementById("general-error").classList.remove("hidden");
-            } else if (data.error) {
-                document.getElementById("general-error").textContent = data.error;
-                document.getElementById("general-error").classList.remove("hidden");
-            }
-
-            // Reset hCaptcha if needed
-            if (window.hcaptcha) { try { hcaptcha.reset(); } catch(e){} }
+            handleSubmitError(data);
         }
     } catch(e) {
         document.getElementById("spinner-overlay").classList.remove("active");
         document.getElementById("submit-btn").disabled = false;
-        document.getElementById("general-error").textContent = "Erreur d'envoi. Si le problème persiste, contactez votre médecin.";
-        document.getElementById("general-error").classList.remove("hidden");
+        showGeneralError("Erreur d'envoi. Si le problème persiste, contactez votre médecin.");
     }
 }
 </script>

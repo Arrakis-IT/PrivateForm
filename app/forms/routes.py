@@ -231,6 +231,53 @@ async def new_form_page(request: Request, db: DbSession,
     })
 
 
+async def _parse_form_json(request: Request) -> tuple[str, list]:
+    try:
+        json_data = await request.json()
+        return (json_data.get("name") or "").strip(), json_data.get("questions") or []
+    except Exception:
+        return "", []
+
+
+def _validate_form_name(form_name: str, doctor_id: str, db: Session, exclude_id: str | None = None) -> str | None:
+    if not form_name or len(form_name) < 3:
+        return "Le nom du formulaire doit contenir au moins 3 caractères."
+    if len(form_name) > 100:
+        return "Le nom du formulaire ne doit pas dépasser 100 caractères."
+    query = db.query(Form).filter(Form.doctor_id == doctor_id, Form.name == form_name)
+    if exclude_id:
+        query = query.filter(Form.id != exclude_id)
+    if query.first():
+        return "Un formulaire avec ce nom existe déjà. Choisissez un autre nom."
+    return None
+
+
+def _validate_question_count(questions_data: list, question_limit: int) -> str | None:
+    if not questions_data:
+        return "Le formulaire doit contenir au moins une question."
+    if len(questions_data) > question_limit:
+        return f"Maximum {question_limit} questions autorisées."
+    return None
+
+
+def _build_question(q: dict, form_id: str, order: int) -> Question:
+    options = q.get("options")
+    if isinstance(options, str):
+        options = [opt.strip() for opt in options.strip().split("\n") if opt.strip()]
+    q_type = q["question_type"]
+    return Question(
+        form_id=form_id,
+        text=q["text"].strip(),
+        question_type=q_type,
+        is_required=q.get("is_required", True),
+        order=order,
+        options=options if q_type in ("select", "multiselect") else None,
+        allow_decimals=q.get("allow_decimals") if q_type == "number" else None,
+        scale_label_1=q.get("scale_label_1", "").strip() if q_type == "scale" else None,
+        scale_label_10=q.get("scale_label_10", "").strip() if q_type == "scale" else None,
+    )
+
+
 @router.post("/form/new", response_class=HTMLResponse)
 async def new_form_submit(request: Request, db: DbSession,
                           doctor_id: CurrentDoctorId):
@@ -238,92 +285,34 @@ async def new_form_submit(request: Request, db: DbSession,
     if not doctor:
         return RedirectResponse(url=LOGIN_URL, status_code=302)
 
-    # Verify limit
-    total_forms = count_forms(db, doctor_id)
-    if total_forms >= doctor.form_limit:
+    if count_forms(db, doctor_id) >= doctor.form_limit:
         return RedirectResponse(url=DOCTOR_HOME_URL, status_code=302)
 
-    # Receive JSON instead of form data
-    try:
-        json_data = await request.json()
-        form_name = (json_data.get("name") or "").strip()
-        questions_data = json_data.get("questions") or []
-    except Exception:
-        form_name = ""
-        questions_data = []
+    form_name, questions_data = await _parse_form_json(request)
 
     errors = {}
-
-    # Validate form name
-    if not form_name or len(form_name) < 3:
-        errors["form_name"] = "Le nom du formulaire doit contenir au moins 3 caractères."
-    elif len(form_name) > 100:
-        errors["form_name"] = "Le nom du formulaire ne doit pas dépasser 100 caractères."
-    else:
-        # Verify name uniqueness
-        existing = db.query(Form).filter(
-            Form.doctor_id == doctor_id,
-            Form.name == form_name
-        ).first()
-        if existing:
-            errors["form_name"] = "Un formulaire avec ce nom existe déjà. Choisissez un autre nom."
-
-    # Verify at least 1 question
-    if not questions_data:
-        errors["questions"] = "Le formulaire doit contenir au moins une question."
-
-    # Verify maximum questions
-    if len(questions_data) > doctor.question_limit:
-        errors["questions"] = f"Maximum {doctor.question_limit} questions autorisées."
-
-    # Validate questions
+    name_error = _validate_form_name(form_name, doctor_id, db)
+    if name_error:
+        errors["form_name"] = name_error
+    count_error = _validate_question_count(questions_data, doctor.question_limit)
+    if count_error:
+        errors["questions"] = count_error
     question_errors = validate_questions(questions_data)
 
     if errors or question_errors:
         logger.warning(f"Validation errors when creating form: errors={sanitize_log(errors)}, question_errors={sanitize_log(question_errors)}")
-        all_errors = {**errors}
-        if question_errors:
-            all_errors["question_errors"] = question_errors
-        error_messages = [v for v in errors.values()] + [str(question_errors)]
-        return JSONResponse(
-            content={"success": False, "errors": error_messages},
-            status_code=400
-        )
+        error_messages = list(errors.values()) + ([str(question_errors)] if question_errors else [])
+        return JSONResponse(content={"success": False, "errors": error_messages}, status_code=400)
 
-    # Create form
-    new_form = Form(
-        doctor_id=doctor_id,
-        name=form_name,
-        is_active=False,  # Inactive when created
-        is_example=False,
-    )
+    new_form = Form(doctor_id=doctor_id, name=form_name, is_active=False, is_example=False)
     db.add(new_form)
-    db.flush()  # To obtain the ID
+    db.flush()
 
-    # Create questions
     for i, q in enumerate(questions_data):
-        options = q.get("options")
-        if isinstance(options, str):
-            # Parse options from textarea (one per line)
-            options = [opt.strip() for opt in options.strip().split("\n") if opt.strip()]
-
-        question = Question(
-            form_id=new_form.id,
-            text=q["text"].strip(),
-            question_type=q["question_type"],
-            is_required=q.get("is_required", True),
-            order=i,
-            options=options if q["question_type"] in ("select", "multiselect") else None,
-            allow_decimals=q.get("allow_decimals") if q["question_type"] == "number" else None,
-            scale_label_1=q.get("scale_label_1", "").strip() if q["question_type"] == "scale" else None,
-            scale_label_10=q.get("scale_label_10", "").strip() if q["question_type"] == "scale" else None,
-        )
-        db.add(question)
+        db.add(_build_question(q, new_form.id, i))
 
     db.commit()
     logger.info(f"Form created: slug={new_form.slug}")
-
-    # Return JSON with created form ID
     return JSONResponse(content={"success": True, "form_id": new_form.id})
 
 
@@ -366,81 +355,33 @@ async def edit_form_submit(request: Request, form_id: str, db: DbSession,
     if not doctor or not form:
         return RedirectResponse(url=DOCTOR_HOME_URL, status_code=302)
 
-    # Receive JSON instead of form data
-    try:
-        json_data = await request.json()
-        form_name = (json_data.get("name") or "").strip()
-        questions_data = json_data.get("questions") or []
-    except Exception:
-        form_name = ""
-        questions_data = []
+    form_name, questions_data = await _parse_form_json(request)
 
     errors = {}
-
-    # Validate name
-    if not form_name or len(form_name) < 3:
-        errors["form_name"] = "Le nom du formulaire doit contenir au moins 3 caractères."
-    elif len(form_name) > 100:
-        errors["form_name"] = "Le nom du formulaire ne doit pas dépasser 100 caractères."
-    else:
-        # Uniqueness except for the same form
-        existing = db.query(Form).filter(
-            Form.doctor_id == doctor_id,
-            Form.name == form_name,
-            Form.id != form_id
-        ).first()
-        if existing:
-            errors["form_name"] = "Un formulaire avec ce nom existe déjà. Choisissez un autre nom."
-
-    if not questions_data:
-        errors["questions"] = "Le formulaire doit contenir au moins une question."
-    if len(questions_data) > doctor.question_limit:
-        errors["questions"] = f"Maximum {doctor.question_limit} questions autorisées."
-
+    name_error = _validate_form_name(form_name, doctor_id, db, exclude_id=form_id)
+    if name_error:
+        errors["form_name"] = name_error
+    count_error = _validate_question_count(questions_data, doctor.question_limit)
+    if count_error:
+        errors["questions"] = count_error
     question_errors = validate_questions(questions_data)
 
     if errors or question_errors:
-        all_errors = {**errors}
-        if question_errors:
-            all_errors["question_errors"] = question_errors
-        error_messages = [v for v in errors.values()] + ([str(question_errors)] if question_errors else [])
-        return JSONResponse(
-            content={"success": False, "errors": error_messages},
-            status_code=400
-        )
+        error_messages = list(errors.values()) + ([str(question_errors)] if question_errors else [])
+        return JSONResponse(content={"success": False, "errors": error_messages}, status_code=400)
 
-    # Update form
     form.name = form_name
-
-    # Deactivate form during edit to prevent inconsistencies with in-flight submissions
     was_active = form.is_active
+    # Deactivate during edit to prevent inconsistencies with in-flight submissions
     form.is_active = False
 
-    # Delete existing questions and recreate them (simpler than trying to diff)
+    # Delete existing questions and recreate (simpler than diffing)
     db.query(Question).filter(Question.form_id == form_id).delete()
-
     for i, q in enumerate(questions_data):
-        options = q.get("options")
-        if isinstance(options, str):
-            options = [opt.strip() for opt in options.strip().split("\n") if opt.strip()]
-
-        question = Question(
-            form_id=form_id,
-            text=q["text"].strip(),
-            question_type=q["question_type"],
-            is_required=q.get("is_required", True),
-            order=i,
-            options=options if q["question_type"] in ("select", "multiselect") else None,
-            allow_decimals=q.get("allow_decimals") if q["question_type"] == "number" else None,
-            scale_label_1=q.get("scale_label_1", "").strip() if q["question_type"] == "scale" else None,
-            scale_label_10=q.get("scale_label_10", "").strip() if q["question_type"] == "scale" else None,
-        )
-        db.add(question)
+        db.add(_build_question(q, form_id, i))
 
     db.commit()
     logger.info(f"Form edited: slug={form.slug}")
-
-    # Return JSON with success; notify frontend if form was deactivated
     return JSONResponse(content={"success": True, "form_id": form_id, "was_deactivated": was_active})
 
 

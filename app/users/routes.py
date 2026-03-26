@@ -56,6 +56,16 @@ def get_doctor(db: Session, doctor_id: str) -> Doctor | None:
     return db.query(Doctor).filter(Doctor.id == doctor_id).first()
 
 
+def _validate_profile_fields(last_name: str, first_name: str, specialty: str, country: str) -> str | None:
+    if not last_name or not first_name:
+        return "Nom et prénom sont obligatoires."
+    if specialty and specialty not in [s for s in MEDICAL_SPECIALTIES]:
+        return "Spécialité invalide."
+    if country and country not in [c[0] for c in AVAILABLE_COUNTRIES]:
+        return "Pays invalide."
+    return None
+
+
 def doctor_to_dict(doctor: Doctor) -> dict:
     """Serializes doctor data for template (without passwords)."""
     return {
@@ -126,19 +136,9 @@ async def profile_update(
     country = (body.get("country") or "").strip()
     newsletter = bool(body.get("newsletter", False))
 
-    # Basic validations
-    if not last_name or not first_name:
-        return JSONResponse({"success": False, "error": "Nom et prénom sont obligatoires."}, status_code=400)
-
-    # Validate specialty
-    valid_specs = [s for s in MEDICAL_SPECIALTIES]
-    if specialty and specialty not in valid_specs:
-        return JSONResponse({"success": False, "error": "Spécialité invalide."}, status_code=400)
-
-    # Validate country
-    valid_countries = [c[0] for c in AVAILABLE_COUNTRIES]
-    if country and country not in valid_countries:
-        return JSONResponse({"success": False, "error": "Pays invalide."}, status_code=400)
+    error = _validate_profile_fields(last_name, first_name, specialty, country)
+    if error:
+        return JSONResponse({"success": False, "error": error}, status_code=400)
 
     # Apply changes
     doctor.last_name = last_name
