@@ -15,6 +15,7 @@
 #
 # See LICENSE file for full terms.
 
+from typing import Annotated
 from zoneinfo import ZoneInfo
 from datetime import datetime
 from fastapi import APIRouter, Request, Depends
@@ -34,6 +35,9 @@ from app.email.service import send_password_changed_email
 from app.core.logging import get_logger
 
 logger = get_logger("users.routes")
+
+DbSession = Annotated[Session, Depends(get_db)]
+CurrentDoctorId = Annotated[str, Depends(get_current_doctor_id)]
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -71,8 +75,8 @@ def doctor_to_dict(doctor: Doctor) -> dict:
 @router.get("/profile", response_class=HTMLResponse)
 async def profile_page(
     request: Request,
-    doctor_id: str = Depends(get_current_doctor_id),
-    db: Session = Depends(get_db),
+    doctor_id: CurrentDoctorId,
+    db: DbSession,
 ):
     doctor = get_doctor(db, doctor_id)
     if not doctor:
@@ -99,8 +103,8 @@ async def profile_page(
 @router.post("/profile/update", response_class=JSONResponse)
 async def profile_update(
     request: Request,
-    doctor_id: str = Depends(get_current_doctor_id),
-    db: Session = Depends(get_db),
+    doctor_id: CurrentDoctorId,
+    db: DbSession,
 ):
     try:
         body = await request.json()
@@ -154,8 +158,8 @@ async def profile_update(
 @router.post("/profile/change-password", response_class=JSONResponse)
 async def change_password(
     request: Request,
-    doctor_id: str = Depends(get_current_doctor_id),
-    db: Session = Depends(get_db),
+    doctor_id: CurrentDoctorId,
+    db: DbSession,
 ):
     try:
         body = await request.json()
@@ -206,8 +210,8 @@ async def change_password(
 @router.post("/profile/change-pdf-password", response_class=JSONResponse)
 async def change_pdf_password(
     request: Request,
-    doctor_id: str = Depends(get_current_doctor_id),
-    db: Session = Depends(get_db),
+    doctor_id: CurrentDoctorId,
+    db: DbSession,
 ):
     try:
         body = await request.json()
@@ -244,8 +248,8 @@ async def change_pdf_password(
 @router.post("/profile/delete-account", response_class=JSONResponse)
 async def delete_account(
     request: Request,
-    doctor_id: str = Depends(get_current_doctor_id),
-    db: Session = Depends(get_db),
+    doctor_id: CurrentDoctorId,
+    db: DbSession,
 ):
     try:
         body = await request.json()

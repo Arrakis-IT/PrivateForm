@@ -19,6 +19,7 @@ import json
 import qrcode
 import io
 import base64
+from typing import Annotated
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -30,6 +31,9 @@ from app.auth.utils import get_current_doctor_id
 from app.core.logging import get_logger, sanitize_log
 
 logger = get_logger("forms.routes")
+
+DbSession = Annotated[Session, Depends(get_db)]
+CurrentDoctorId = Annotated[str, Depends(get_current_doctor_id)]
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -158,8 +162,8 @@ def validate_questions(questions_data: list[dict]) -> dict[int, list[str]]:
 # =============================================================================
 
 @router.get("/home", response_class=HTMLResponse)
-async def home(request: Request, db: Session = Depends(get_db),
-               doctor_id: str = Depends(get_current_doctor_id)):
+async def home(request: Request, db: DbSession,
+               doctor_id: CurrentDoctorId):
     doctor = get_doctor(db, doctor_id)
     if not doctor:
         return RedirectResponse(url="/login", status_code=302)
@@ -185,8 +189,8 @@ async def home(request: Request, db: Session = Depends(get_db),
 # =============================================================================
 
 @router.get("/form/new", response_class=HTMLResponse)
-async def new_form_page(request: Request, db: Session = Depends(get_db),
-                        doctor_id: str = Depends(get_current_doctor_id)):
+async def new_form_page(request: Request, db: DbSession,
+                        doctor_id: CurrentDoctorId):
     doctor = get_doctor(db, doctor_id)
     if not doctor:
         return RedirectResponse(url="/login", status_code=302)
@@ -212,8 +216,8 @@ async def new_form_page(request: Request, db: Session = Depends(get_db),
 
 
 @router.post("/form/new", response_class=HTMLResponse)
-async def new_form_submit(request: Request, db: Session = Depends(get_db),
-                          doctor_id: str = Depends(get_current_doctor_id)):
+async def new_form_submit(request: Request, db: DbSession,
+                          doctor_id: CurrentDoctorId):
     doctor = get_doctor(db, doctor_id)
     if not doctor:
         return RedirectResponse(url="/login", status_code=302)
@@ -312,8 +316,8 @@ async def new_form_submit(request: Request, db: Session = Depends(get_db),
 # =============================================================================
 
 @router.get("/form/{form_id}/edit", response_class=HTMLResponse)
-async def edit_form_page(request: Request, form_id: str, db: Session = Depends(get_db),
-                         doctor_id: str = Depends(get_current_doctor_id)):
+async def edit_form_page(request: Request, form_id: str, db: DbSession,
+                         doctor_id: CurrentDoctorId):
     doctor = get_doctor(db, doctor_id)
     form = get_form(db, form_id, doctor_id)
 
@@ -338,8 +342,8 @@ async def edit_form_page(request: Request, form_id: str, db: Session = Depends(g
 
 
 @router.post("/form/{form_id}/edit", response_class=HTMLResponse)
-async def edit_form_submit(request: Request, form_id: str, db: Session = Depends(get_db),
-                           doctor_id: str = Depends(get_current_doctor_id)):
+async def edit_form_submit(request: Request, form_id: str, db: DbSession,
+                           doctor_id: CurrentDoctorId):
     doctor = get_doctor(db, doctor_id)
     form = get_form(db, form_id, doctor_id)
 
@@ -429,8 +433,8 @@ async def edit_form_submit(request: Request, form_id: str, db: Session = Depends
 # =============================================================================
 
 @router.post("/form/{form_id}/toggle", response_class=JSONResponse)
-async def toggle_form(form_id: str, request: Request, db: Session = Depends(get_db),
-                      doctor_id: str = Depends(get_current_doctor_id)):
+async def toggle_form(form_id: str, request: Request, db: DbSession,
+                      doctor_id: CurrentDoctorId):
     form = get_form(db, form_id, doctor_id)
     if not form:
         return JSONResponse(content={"error": "Formulaire non trouvé"}, status_code=404)
@@ -447,8 +451,8 @@ async def toggle_form(form_id: str, request: Request, db: Session = Depends(get_
 # =============================================================================
 
 @router.post("/form/{form_id}/delete", response_class=JSONResponse)
-async def delete_form(form_id: str, request: Request, db: Session = Depends(get_db),
-                      doctor_id: str = Depends(get_current_doctor_id)):
+async def delete_form(form_id: str, request: Request, db: DbSession,
+                      doctor_id: CurrentDoctorId):
     form = get_form(db, form_id, doctor_id)
     if not form:
         return JSONResponse(content={"error": "Formulaire non trouvé"}, status_code=404)
@@ -472,8 +476,8 @@ async def delete_form(form_id: str, request: Request, db: Session = Depends(get_
 # =============================================================================
 
 @router.get("/form/{form_id}/share", response_class=JSONResponse)
-async def get_share_data(form_id: str, db: Session = Depends(get_db),
-                         doctor_id: str = Depends(get_current_doctor_id)):
+async def get_share_data(form_id: str, db: DbSession,
+                         doctor_id: CurrentDoctorId):
     form = get_form(db, form_id, doctor_id)
     if not form:
         return JSONResponse(content={"error": "Formulaire non trouvé"}, status_code=404)
@@ -494,8 +498,8 @@ async def get_share_data(form_id: str, db: Session = Depends(get_db),
 # =============================================================================
 
 @router.get("/form/{form_id}/qr-download")
-async def download_qr(form_id: str, db: Session = Depends(get_db),
-                      doctor_id: str = Depends(get_current_doctor_id)):
+async def download_qr(form_id: str, db: DbSession,
+                      doctor_id: CurrentDoctorId):
     from fastapi.responses import Response
 
     form = get_form(db, form_id, doctor_id)
