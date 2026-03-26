@@ -217,7 +217,7 @@ def _find_answer_value(answers: list[dict], question_id: str) -> str:
     return ""
 
 
-def _render_answer(pdf, question_type: str, answer_value, question: dict) -> None:
+def _render_answer(pdf, question_type: str, answer_value) -> None:
     pdf.set_font("DejaVu", "", 10)
     pdf.set_text_color(55, 65, 81)
 
@@ -277,7 +277,7 @@ def generate_pdf(
         pdf.set_text_color(156, 163, 175)
         pdf.cell(0, 4, f"Type : {QUESTION_TYPE_LABELS.get(question['question_type'], question['question_type'])}", new_x="LMARGIN", new_y="NEXT")
 
-        _render_answer(pdf, question["question_type"], answer_value, question)
+        _render_answer(pdf, question["question_type"], answer_value)
 
         pdf.ln(4)
 
