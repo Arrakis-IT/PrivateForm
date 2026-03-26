@@ -133,7 +133,7 @@ echo ""
 # ---------------------------------------------------------------
 echo "[STEP 5] Verifying logo..."
 LOGO_SIZE=$(stat -c%s "${DEPLOY_DIR}/app/static/img/logo.png" 2>/dev/null || echo 0)
-if [ "$LOGO_SIZE" -lt 100 ]; then
+if [[ "$LOGO_SIZE" -lt 100 ]]; then
     echo "  ⚠ Logo is a placeholder (${LOGO_SIZE} bytes)."
     echo "  → Copy your real logo:"
     echo "      cp /path/to/your/logo.png ${DEPLOY_DIR}/app/static/img/logo.png"

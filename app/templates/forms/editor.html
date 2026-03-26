@@ -109,7 +109,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-500">Obligatoire</span>
-                    <label class="toggle-switch">
+                    <label class="toggle-switch" aria-label="Obligatoire">
                         <input type="checkbox" class="q-required" {% if q.is_required %}checked{% endif %} onchange="markDirty()">
                         <span class="toggle-slider"></span>
                     </label>
@@ -397,8 +397,8 @@ function addQuestion() {
         </div>
         <div class="flex items-center gap-4 mb-3">
             <div class="flex-1">
-                <label class="block text-xs text-gray-500 mb-1">Type de réponse</label>
-                <select class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500" onchange="markDirty(); handleTypeChange(this)">
+                <span class="block text-xs text-gray-500 mb-1">Type de réponse</span>
+                <select class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500" aria-label="Type de réponse" onchange="markDirty(); handleTypeChange(this)">
                     <option value="text" ${type==='text'?'selected':''}>Texte</option>
                     <option value="text_long" ${type==='text_long'?'selected':''}>Texte long</option>
                     <option value="yes_no" ${type==='yes_no'?'selected':''}>Oui / Non</option>
@@ -413,21 +413,21 @@ function addQuestion() {
                 </select>
             </div>
             <div class="flex items-end gap-2">
-                <label class="text-xs text-gray-500">Obligatoire</label>
-                <label class="toggle-switch"><input type="checkbox" class="q-required" ${required?'checked':''} onchange="markDirty()"><span class="toggle-slider"></span></label>
+                <span class="text-xs text-gray-500">Obligatoire</span>
+                <label class="toggle-switch" aria-label="Obligatoire"><input type="checkbox" class="q-required" ${required?'checked':''} onchange="markDirty()"><span class="toggle-slider"></span></label>
             </div>
         </div>
         <div class="q-options-block" style="${(type==='select'||type==='multiselect')?'':'display:none;'}">
-            <label class="block text-xs text-gray-500 mb-1">Options (une par ligne)</label>
-            <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" rows="3" oninput="markDirty()">${document.getElementById('new-q-options').value}</textarea>
+            <span class="block text-xs text-gray-500 mb-1">Options (une par ligne)</span>
+            <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" rows="3" aria-label="Options (une par ligne)" oninput="markDirty()">${document.getElementById('new-q-options').value}</textarea>
         </div>
         <div class="q-number-block" style="${type==='number'?'':'display:none;'}">
             <label class="flex items-center gap-2"><input type="checkbox" class="q-decimals" ${document.getElementById('new-q-decimals').checked?'checked':''}><span class="text-xs text-gray-500">Permettre les décimales</span></label>
         </div>
         <div class="q-scale-block" style="${type==='scale'?'':'display:none;'}">
             <div class="flex gap-4">
-                <div class="flex-1"><label class="block text-xs text-gray-500 mb-1">Étiquette pour 1 *</label><input type="text" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" maxlength="30" value="${document.getElementById('new-scale-1').value}"></div>
-                <div class="flex-1"><label class="block text-xs text-gray-500 mb-1">Étiquette pour 10 *</label><input type="text" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" maxlength="30" value="${document.getElementById('new-scale-10').value}"></div>
+                <div class="flex-1"><span class="block text-xs text-gray-500 mb-1">Étiquette pour 1 *</span><input type="text" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" aria-label="Étiquette pour 1" maxlength="30" value="${document.getElementById('new-scale-1').value}"></div>
+                <div class="flex-1"><span class="block text-xs text-gray-500 mb-1">Étiquette pour 10 *</span><input type="text" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" aria-label="Étiquette pour 10" maxlength="30" value="${document.getElementById('new-scale-10').value}"></div>
             </div>
         </div>
     `;
