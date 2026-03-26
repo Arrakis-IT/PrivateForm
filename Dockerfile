@@ -23,8 +23,9 @@ COPY requirements.txt requirements.lock ./
 # Update pip itself before installing dependencies
 RUN pip install --no-cache-dir --upgrade pip
 
-# Install pinned dependencies from lockfile
-RUN pip install --no-cache-dir -r requirements.lock
+# Install pinned dependencies from lockfile (BuildKit cache avoids re-downloading on cache miss)
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.lock
 
 # --- Stage 2: Final production image ---
 FROM python:3.12-slim

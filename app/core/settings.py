@@ -18,6 +18,8 @@ import os
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
+_PRIVATEFORM_EMAIL = "privateform@arrakis.lu"
+
 
 def read_secret(secret_file_env: str, fallback_env: str) -> str:
     """
@@ -56,22 +58,22 @@ class Settings(BaseSettings):
     # -----------------------------------------------------------------------
     # Brevo
     # -----------------------------------------------------------------------
-    BREVO_SENDER_EMAIL: str = "privateform@arrakis.lu"
+    BREVO_SENDER_EMAIL: str = _PRIVATEFORM_EMAIL
     BREVO_SENDER_NAME: str = "PrivateForm"
-    BREVO_REPLY_TO: str = "privateform@arrakis.lu"
+    BREVO_REPLY_TO: str = _PRIVATEFORM_EMAIL
     BREVO_DAILY_LIMIT: int = 300
 
     # -----------------------------------------------------------------------
     # Contact
     # -----------------------------------------------------------------------
-    CONTACT_EMAIL: str = "privateform@arrakis.lu"
+    CONTACT_EMAIL: str = _PRIVATEFORM_EMAIL
     CONTACT_PHONE: str = "691 292 193"
     CONTACT_WEB: str = "www.arrakis.lu"
 
     # -----------------------------------------------------------------------
     # Alerts
     # -----------------------------------------------------------------------
-    ALERT_EMAIL: str = "privateform@arrakis.lu"
+    ALERT_EMAIL: str = _PRIVATEFORM_EMAIL
     ALERT_MAX_PER_HOUR: int = 10
 
     # -----------------------------------------------------------------------

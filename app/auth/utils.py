@@ -70,7 +70,7 @@ def validate_password_strength(password: str) -> dict[str, bool]:
         "min_length": len(password) >= 8,
         "has_uppercase": bool(re.search(r"[A-Z]", password)),
         "has_lowercase": bool(re.search(r"[a-z]", password)),
-        "has_number": bool(re.search(r"[0-9]", password)),
+        "has_number": bool(re.search(r"\d", password)),
     }
 
 

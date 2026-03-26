@@ -29,6 +29,10 @@ def generate_uuid() -> str:
     return str(uuid.uuid4())
 
 
+CASCADE_ALL_DELETE = "all, delete-orphan"
+FK_DOCTOR_ID = "doctors.id"
+
+
 def generate_slug() -> str:
     """Generates a 6-character alphanumeric slug."""
     import secrets
@@ -62,9 +66,9 @@ class Doctor(Base):
     updated_at: datetime = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    forms = relationship("Form", back_populates="doctor", cascade="all, delete-orphan")
-    verification_tokens = relationship("VerificationToken", back_populates="doctor", cascade="all, delete-orphan")
-    password_reset_tokens = relationship("PasswordResetToken", back_populates="doctor", cascade="all, delete-orphan")
+    forms = relationship("Form", back_populates="doctor", cascade=CASCADE_ALL_DELETE)
+    verification_tokens = relationship("VerificationToken", back_populates="doctor", cascade=CASCADE_ALL_DELETE)
+    password_reset_tokens = relationship("PasswordResetToken", back_populates="doctor", cascade=CASCADE_ALL_DELETE)
 
 
 # -----------------------------------------------------------------------------
@@ -74,7 +78,7 @@ class Form(Base):
     __tablename__ = "forms"
 
     id: str = Column(String, primary_key=True, default=generate_uuid)
-    doctor_id: str = Column(String, ForeignKey("doctors.id"), nullable=False)
+    doctor_id: str = Column(String, ForeignKey(FK_DOCTOR_ID), nullable=False)
     name: str = Column(String, nullable=False)
     slug: str = Column(String, unique=True, nullable=False, default=generate_slug, index=True)
     is_active: bool = Column(Boolean, default=False)
@@ -87,7 +91,7 @@ class Form(Base):
 
     # Relationships
     doctor = relationship("Doctor", back_populates="forms")
-    questions = relationship("Question", back_populates="form", cascade="all, delete-orphan", order_by="Question.order")
+    questions = relationship("Question", back_populates="form", cascade=CASCADE_ALL_DELETE, order_by="Question.order")
 
 
 # -----------------------------------------------------------------------------
@@ -120,7 +124,7 @@ class VerificationToken(Base):
     __tablename__ = "verification_tokens"
 
     id: str = Column(String, primary_key=True, default=generate_uuid)
-    doctor_id: str = Column(String, ForeignKey("doctors.id"), nullable=False)
+    doctor_id: str = Column(String, ForeignKey(FK_DOCTOR_ID), nullable=False)
     token: str = Column(String, unique=True, nullable=False, index=True)
     is_used: bool = Column(Boolean, default=False)
     expires_at: datetime = Column(DateTime(timezone=True), nullable=False)
@@ -137,7 +141,7 @@ class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
 
     id: str = Column(String, primary_key=True, default=generate_uuid)
-    doctor_id: str = Column(String, ForeignKey("doctors.id"), nullable=False)
+    doctor_id: str = Column(String, ForeignKey(FK_DOCTOR_ID), nullable=False)
     token: str = Column(String, unique=True, nullable=False, index=True)
     is_used: bool = Column(Boolean, default=False)
     expires_at: datetime = Column(DateTime(timezone=True), nullable=False)
