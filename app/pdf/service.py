@@ -19,7 +19,7 @@
 import io
 from pathlib import Path
 from datetime import datetime
-import pytz
+from zoneinfo import ZoneInfo
 from fpdf import FPDF
 from PIL import Image
 import pypdf
@@ -32,7 +32,7 @@ logger = get_logger("pdf")
 LOGO_PATH = Path("/app/app/static/img/logo.png")
 
 # Luxembourg timezone
-LUX_TZ = pytz.timezone("Europe/Luxembourg")
+LUX_TZ = ZoneInfo("Europe/Luxembourg")
 
 
 def _get_lux_timestamp(dt: datetime | None = None) -> str:

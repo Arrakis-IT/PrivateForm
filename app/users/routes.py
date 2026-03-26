@@ -15,7 +15,7 @@
 #
 # See LICENSE file for full terms.
 
-import pytz
+from zoneinfo import ZoneInfo
 from datetime import datetime
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
@@ -38,7 +38,7 @@ logger = get_logger("users.routes")
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
-LUX_TZ = pytz.timezone("Europe/Luxembourg")
+LUX_TZ = ZoneInfo("Europe/Luxembourg")
 
 
 # =============================================================================
