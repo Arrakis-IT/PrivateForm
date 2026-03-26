@@ -131,22 +131,29 @@
         <div class="question-block" data-id="{{ q.id }}" data-type="{{ q.question_type }}">
 
             <!-- Label -->
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
+            {% if q.question_type in ('yes_no', 'scale', 'multiselect') %}
+            <p class="block text-sm font-semibold text-gray-700 mb-2" id="label-{{ q.id }}">
+                {{ q.text }}
+                {% if q.is_required %}<span class="text-red-500">*</span> <span class="text-xs font-normal text-red-400">Obligatoire</span>{% endif %}
+            </p>
+            {% else %}
+            <label for="q-{{ q.id }}" class="block text-sm font-semibold text-gray-700 mb-2">
                 {{ q.text }}
                 {% if q.is_required %}<span class="text-red-500">*</span> <span class="text-xs font-normal text-red-400">Obligatoire</span>{% endif %}
             </label>
+            {% endif %}
 
             <!-- Inline error -->
             <div class="error-msg text-red-500 text-xs mb-1 hidden"></div>
 
             <!-- ============ TEXT ============ -->
             {% if q.question_type == 'text' %}
-            <input type="text" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+            <input type="text" id="q-{{ q.id }}" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
                    placeholder="Votre réponse">
 
             <!-- ============ TEXT LONG ============ -->
             {% elif q.question_type == 'text_long' %}
-            <textarea class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 resize-none"
+            <textarea id="q-{{ q.id }}" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 resize-none"
                       rows="4" maxlength="5000" placeholder="Votre réponse"></textarea>
             <div class="text-right"><span class="text-xs text-gray-400 char-count">0/5000</span></div>
 
@@ -161,7 +168,7 @@
 
             <!-- ============ SELECT ============ -->
             {% elif q.question_type == 'select' %}
-            <select class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:border-blue-500">
+            <select id="q-{{ q.id }}" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:border-blue-500">
                 <option value="">— Choisir —</option>
                 {% for opt in q.options %}
                 <option value="{{ opt }}">{{ opt }}</option>
@@ -181,27 +188,27 @@
 
             <!-- ============ DATE ============ -->
             {% elif q.question_type == 'date' %}
-            <input type="date" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500">
+            <input type="date" id="q-{{ q.id }}" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500">
 
             <!-- ============ NUMBER ============ -->
             {% elif q.question_type == 'number' %}
-            <input type="text" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+            <input type="text" id="q-{{ q.id }}" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
                    placeholder="{% if q.allow_decimals %}Ex : 3,5{% else %}Ex : 42{% endif %}"
                    inputmode="{% if q.allow_decimals %}decimal{% else %}numeric{% endif %}">
 
             <!-- ============ EMAIL ============ -->
             {% elif q.question_type == 'email' %}
-            <input type="email" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+            <input type="email" id="q-{{ q.id }}" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
                    placeholder="votre@email.com">
 
             <!-- ============ PHONE ============ -->
             {% elif q.question_type == 'phone' %}
-            <input type="tel" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+            <input type="tel" id="q-{{ q.id }}" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
                    placeholder="+352 ..." inputmode="tel">
 
             <!-- ============ MATRICULE CNS ============ -->
             {% elif q.question_type == 'matricule' %}
-            <input type="text" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
+            <input type="text" id="q-{{ q.id }}" class="answer-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500"
                    placeholder="19850315001" maxlength="11" inputmode="numeric" pattern="[0-9]{11}">
             <p class="text-xs text-gray-400 mt-1">Matricule CNS : 11 chiffres (ex: 19850315001)</p>
 

@@ -18,18 +18,15 @@ import re
 from datetime import datetime, timedelta, timezone
 import jwt
 from jwt.exceptions import InvalidTokenError
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import Request, HTTPException
 from fastapi.responses import Response
 from app.core.settings import settings
 from app.auth.token_denylist import denylist
 
-# --- Hashing context (bcrypt) ---
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 # Pre-computed dummy hash to prevent user enumeration via timing attacks.
 # verify_password() is always called, even when the email doesn't exist.
-_DUMMY_HASH = pwd_context.hash("dummy-that-never-matches-any-real-password")
+_DUMMY_HASH = bcrypt.hashpw(b"dummy-that-never-matches-any-real-password", bcrypt.gensalt()).decode()
 
 def get_dummy_hash() -> str:
     """Returns a pre-computed dummy hash for timing-safe login checks."""
@@ -54,12 +51,12 @@ def is_valid_email(email: str) -> bool:
 
 def hash_password(password: str) -> str:
     """Generates a bcrypt hash of the password."""
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies a password against its hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
 
 
 def validate_password_strength(password: str) -> dict[str, bool]:
@@ -163,7 +160,7 @@ def get_token_from_cookie(request: Request) -> str | None:
 # Dependency: Get authenticated doctor
 # =============================================================================
 
-async def get_current_doctor_id(request: Request) -> str:
+def get_current_doctor_id(request: Request) -> str:
     """
     FastAPI dependency that extracts and validates token from cookie.
     Returns doctor_id if valid.

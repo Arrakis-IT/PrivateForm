@@ -72,7 +72,7 @@ def get_logger(name: str) -> logging.Logger:
     return logger
 
 
-def sanitize_log(value: str) -> str:
+def sanitize_log(value: object) -> str:
     """
     Sanitizes user-controlled values before logging to prevent log injection.
     Replaces newline and carriage return characters to avoid fake log entries.

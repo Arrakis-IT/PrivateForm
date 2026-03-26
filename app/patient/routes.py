@@ -316,7 +316,7 @@ async def patient_form_submit(request: Request, slug: str):
             #     f.write(encrypted_pdf)
             # logger.info(f"PDF temporarily saved at {pdf_path}")
         except Exception as e:
-            logger.error(f"Error generating PDF for form {slug}: {e}")
+            logger.error(f"Error generating PDF for form id={form.id}: {e}")
             return JSONResponse({"success": False, "error": "Erreur d'envoi. Si le problème persiste, contactez votre médecin."}, status_code=500)
 
         # --- Send email to doctor ---
@@ -329,7 +329,7 @@ async def patient_form_submit(request: Request, slug: str):
             pdf_filename=pdf_filename,
         )
         if not email_sent:
-            logger.error(f"Email delivery failed for form {slug} — patient answers preserved on screen")
+            logger.error(f"Email delivery failed for form id={form.id} — patient answers preserved on screen")
             return JSONResponse({
                 "success": False,
                 "error": "L'envoi a échoué. Vos réponses sont conservées, veuillez réessayer dans quelques instants.",
@@ -342,7 +342,7 @@ async def patient_form_submit(request: Request, slug: str):
         form.submission_count += 1
         db.commit()
 
-        logger.info(f"Form {slug} submitted successfully. Total submissions: {form.submission_count}")
+        logger.info(f"Form id={form.id} submitted successfully. Total submissions: {form.submission_count}")
 
         # --- Successful response ---
         return JSONResponse({

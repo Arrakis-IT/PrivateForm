@@ -44,12 +44,12 @@
             <!-- Nom + Prénom -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Nom</label>
+                    <label for="prof-last-name" class="block text-xs font-medium text-gray-500 mb-1">Nom</label>
                     <input type="text" id="prof-last-name" value="{{ doctor.last_name }}"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Prénom</label>
+                    <label for="prof-first-name" class="block text-xs font-medium text-gray-500 mb-1">Prénom</label>
                     <input type="text" id="prof-first-name" value="{{ doctor.first_name }}"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                 </div>
@@ -57,16 +57,16 @@
 
             <!-- Email (read-only) -->
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">
+                <label for="prof-email" class="block text-xs font-medium text-gray-500 mb-1">
                     Email <span class="text-gray-400 font-normal">(non modifiable — contactez le support)</span>
                 </label>
-                <input type="text" value="{{ doctor.email }}" readonly
+                <input type="text" id="prof-email" value="{{ doctor.email }}" readonly
                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-not-allowed">
             </div>
 
             <!-- Spécialité -->
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Spécialité</label>
+                <label for="prof-specialty" class="block text-xs font-medium text-gray-500 mb-1">Spécialité</label>
                 <select id="prof-specialty" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
                     <option value="">— Choisir —</option>
                     {% for spec in specialties %}
@@ -77,14 +77,14 @@
 
             <!-- Téléphone -->
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Téléphone</label>
+                <label for="prof-phone" class="block text-xs font-medium text-gray-500 mb-1">Téléphone</label>
                 <input type="text" id="prof-phone" value="{{ doctor.phone }}" placeholder="+352 ..."
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
             </div>
 
             <!-- Pays -->
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Pays / Région</label>
+                <label for="prof-country" class="block text-xs font-medium text-gray-500 mb-1">Pays / Région</label>
                 <select id="prof-country" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
                     <option value="">— Choisir —</option>
                     {% for country_name, _ in countries %}
@@ -117,12 +117,12 @@
 
         <div class="space-y-3">
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Mot de passe actuel <span class="text-red-500">*</span></label>
+                <label for="pw-current" class="block text-xs font-medium text-gray-500 mb-1">Mot de passe actuel <span class="text-red-500">*</span></label>
                 <input type="password" id="pw-current"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Nouveau mot de passe <span class="text-red-500">*</span></label>
+                <label for="pw-new" class="block text-xs font-medium text-gray-500 mb-1">Nouveau mot de passe <span class="text-red-500">*</span></label>
                 <input type="password" id="pw-new" oninput="checkNewPw()"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                 <!-- Mini checklist -->
@@ -134,7 +134,7 @@
                 </div>
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Confirmer nouveau mot de passe <span class="text-red-500">*</span></label>
+                <label for="pw-confirm" class="block text-xs font-medium text-gray-500 mb-1">Confirmer nouveau mot de passe <span class="text-red-500">*</span></label>
                 <input type="password" id="pw-confirm"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
             </div>
@@ -153,7 +153,7 @@
 
         <div class="space-y-3">
             <div class="relative">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Nouveau mot de passe PDF <span class="text-red-500">*</span></label>
+                <label for="pdf-pw-new" class="block text-xs font-medium text-gray-500 mb-1">Nouveau mot de passe PDF <span class="text-red-500">*</span></label>
                 <input type="password" id="pdf-pw-new"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 pr-10">
                 <button onclick="toggleVisibility('pdf-pw-new')" class="absolute right-3 top-7 text-gray-400 hover:text-gray-600">
@@ -164,7 +164,7 @@
                 </button>
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Confirmer mot de passe PDF <span class="text-red-500">*</span></label>
+                <label for="pdf-pw-confirm" class="block text-xs font-medium text-gray-500 mb-1">Confirmer mot de passe PDF <span class="text-red-500">*</span></label>
                 <input type="password" id="pdf-pw-confirm"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
             </div>

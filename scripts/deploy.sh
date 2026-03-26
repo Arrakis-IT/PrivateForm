@@ -51,14 +51,14 @@ echo ""
 # ---------------------------------------------------------------
 echo "[STEP 2] Generating automatic secrets..."
 
-if [ ! -f "${SECRETS_DIR}/jwt_secret.txt" ]; then
+if [[ ! -f "${SECRETS_DIR}/jwt_secret.txt" ]]; then
     openssl rand -base64 48 | tr -d '\n' > "${SECRETS_DIR}/jwt_secret.txt"
     echo "  ✓ jwt_secret.txt generated."
 else
     echo "  → jwt_secret.txt already exists (not overwriting)."
 fi
 
-if [ ! -f "${SECRETS_DIR}/app_secret_key.txt" ]; then
+if [[ ! -f "${SECRETS_DIR}/app_secret_key.txt" ]]; then
     openssl rand -base64 48 | tr -d '\n' > "${SECRETS_DIR}/app_secret_key.txt"
     echo "  ✓ app_secret_key.txt generated."
 else
@@ -77,7 +77,7 @@ echo "[STEP 3] Verifying manual secrets..."
 MISSING=0
 
 for secret in db_password brevo_api_key; do
-    if [ ! -f "${SECRETS_DIR}/${secret}.txt" ]; then
+    if [[ ! -f "${SECRETS_DIR}/${secret}.txt" ]]; then
         echo "  ⚠ MISSING: ${SECRETS_DIR}/${secret}.txt"
         MISSING=1
     else
@@ -87,7 +87,7 @@ done
 
 # hCaptcha is optional
 for secret in hcaptcha_site_key hcaptcha_secret_key; do
-    if [ ! -f "${SECRETS_DIR}/${secret}.txt" ]; then
+    if [[ ! -f "${SECRETS_DIR}/${secret}.txt" ]]; then
         echo "  ℹ ${secret}.txt doesn't exist → hCaptcha disabled (OK for now)."
         # Create with placeholder value so Docker doesn't fail
         printf 'your_hcaptcha_site_key_here' > "${SECRETS_DIR}/${secret}.txt"
@@ -97,7 +97,7 @@ for secret in hcaptcha_site_key hcaptcha_secret_key; do
     fi
 done
 
-if [ $MISSING -eq 1 ]; then
+if [[ $MISSING -eq 1 ]]; then
     echo ""
     echo "  ⛔ STOP: Create missing secrets and run again."
     echo ""
@@ -114,8 +114,8 @@ echo ""
 # STEP 4: Verify .env
 # ---------------------------------------------------------------
 echo "[STEP 4] Verifying .env..."
-if [ ! -f "${DEPLOY_DIR}/.env" ]; then
-    if [ -f "${DEPLOY_DIR}/.env.example" ]; then
+if [[ ! -f "${DEPLOY_DIR}/.env" ]]; then
+    if [[ -f "${DEPLOY_DIR}/.env.example" ]]; then
         cp "${DEPLOY_DIR}/.env.example" "${DEPLOY_DIR}/.env"
         echo "  ⚠ .env created from .env.example."
         echo "  → Review and edit ${DEPLOY_DIR}/.env (especially APP_DOMAIN)."
@@ -163,7 +163,7 @@ echo "[STEP 7] Docker build..."
 cd "${DEPLOY_DIR}"
 
 # Generate poetry.lock if it doesn't exist
-if [ ! -f "poetry.lock" ]; then
+if [[ ! -f "poetry.lock" ]]; then
     echo "  → Generating poetry.lock..."
     pip install poetry --quiet 2>/dev/null && poetry lock --no-update || {
         echo "  ⚠ Couldn't generate poetry.lock with poetry."

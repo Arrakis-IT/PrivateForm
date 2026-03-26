@@ -142,7 +142,7 @@ async def profile_update(
     doctor.newsletter = newsletter
 
     db.commit()
-    logger.info(f"Profile updated for doctor {doctor_id}")
+    logger.info("Profile updated")
 
     return JSONResponse({"success": True, "message": "Profil mis à jour avec succès."})
 
@@ -189,11 +189,11 @@ async def change_password(
     # Send confirmation email
     try:
         now_lux = datetime.now(LUX_TZ)
-        await send_password_changed_email(doctor.email, now_lux.strftime("%d/%m/%Y à %H:%M (CET)"))
+        await send_password_changed_email(doctor.email, f"{doctor.first_name} {doctor.last_name}", now_lux.strftime("%d/%m/%Y à %H:%M (CET)"))
     except Exception as e:
         logger.warning(f"Error sending password change email: {e}")
 
-    logger.info(f"Login password changed for doctor {doctor_id}")
+    logger.info("Login password changed")
 
     # Close current session (client must logout)
     return JSONResponse({"success": True, "message": "Mot de passe modifié. Vous allez être déconnecté.", "logout": True})
@@ -232,7 +232,7 @@ async def change_pdf_password(
 
     db.commit()
 
-    logger.info(f"PDF password changed for doctor {doctor_id}")
+    logger.info("PDF password changed")
 
     return JSONResponse({"success": True, "message": "Mot de passe PDF mis à jour avec succès."})
 
@@ -270,7 +270,7 @@ async def delete_account(
     db.delete(doctor)
     db.commit()
 
-    logger.info(f"Account permanently deleted for doctor {doctor_id}")
+    logger.info("Account permanently deleted")
 
     response = JSONResponse({"success": True})
     clear_auth_cookie(response)

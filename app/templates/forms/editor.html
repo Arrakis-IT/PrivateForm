@@ -32,7 +32,7 @@
 
     <!-- Form name (always visible) -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
-        <label class="block text-sm font-semibold text-gray-700 mb-2">Nom du formulaire <span class="text-red-500">*</span></label>
+        <label for="form-name-input" class="block text-sm font-semibold text-gray-700 mb-2">Nom du formulaire <span class="text-red-500">*</span></label>
         <input type="text" id="form-name-input"
                value="{{ form_name }}"
                maxlength="100"
@@ -91,8 +91,8 @@
             <!-- Type selector + required toggle -->
             <div class="flex items-center gap-4 mb-3">
                 <div class="flex-1">
-                    <label class="block text-xs text-gray-500 mb-1">Type de réponse</label>
-                    <select class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500"
+                    <label for="q{{ loop.index0 }}-type" class="block text-xs text-gray-500 mb-1">Type de réponse</label>
+                    <select id="q{{ loop.index0 }}-type" class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500"
                             onchange="markDirty(); handleTypeChange(this)">
                         <option value="text" {% if q.question_type == 'text' %}selected{% endif %}>Texte</option>
                         <option value="text_long" {% if q.question_type == 'text_long' %}selected{% endif %}>Texte long</option>
@@ -108,7 +108,7 @@
                     </select>
                 </div>
                 <div class="flex items-center gap-2">
-                    <label class="text-xs text-gray-500">Obligatoire</label>
+                    <span class="text-xs text-gray-500">Obligatoire</span>
                     <label class="toggle-switch">
                         <input type="checkbox" class="q-required" {% if q.is_required %}checked{% endif %} onchange="markDirty()">
                         <span class="toggle-slider"></span>
@@ -118,8 +118,8 @@
 
             <!-- Conditional fields -->
             <div class="q-options-block" style="{% if q.question_type not in ['select', 'multiselect'] %}display:none;{% endif %}">
-                <label class="block text-xs text-gray-500 mb-1">Options (une par ligne, min 2, max 10)</label>
-                <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
+                <label for="q{{ loop.index0 }}-options" class="block text-xs text-gray-500 mb-1">Options (une par ligne, min 2, max 10)</label>
+                <textarea id="q{{ loop.index0 }}-options" class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
                           rows="3" placeholder="Option 1&#10;Option 2&#10;Option 3"
                           oninput="markDirty()">{% if q.options %}{{ q.options | join('\n') }}{% endif %}</textarea>
                 {% if question_errors[loop.index0] and 'options' in question_errors[loop.index0] %}
@@ -137,13 +137,13 @@
             <div class="q-scale-block" style="{% if q.question_type != 'scale' %}display:none;{% endif %}">
                 <div class="flex gap-4">
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1">Étiquette pour 1 <span class="text-red-500">*</span></label>
-                        <input type="text" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500"
+                        <label for="q{{ loop.index0 }}-scale1" class="block text-xs text-gray-500 mb-1">Étiquette pour 1 <span class="text-red-500">*</span></label>
+                        <input type="text" id="q{{ loop.index0 }}-scale1" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500"
                                maxlength="30" value="{{ q.scale_label_1 or '' }}" oninput="markDirty()">
                     </div>
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1">Étiquette pour 10 <span class="text-red-500">*</span></label>
-                        <input type="text" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500"
+                        <label for="q{{ loop.index0 }}-scale10" class="block text-xs text-gray-500 mb-1">Étiquette pour 10 <span class="text-red-500">*</span></label>
+                        <input type="text" id="q{{ loop.index0 }}-scale10" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500"
                                maxlength="30" value="{{ q.scale_label_10 or '' }}" oninput="markDirty()">
                     </div>
                 </div>
@@ -168,7 +168,7 @@
 
         <div class="space-y-3">
             <div>
-                <label class="block text-xs text-gray-500 mb-1">Question <span class="text-red-500">*</span></label>
+                <label for="new-q-text" class="block text-xs text-gray-500 mb-1">Question <span class="text-red-500">*</span></label>
                 <textarea id="new-q-text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
                           rows="2" maxlength="500" placeholder="Texte de la question"
                           oninput="updateCounter(this, 500)"></textarea>
@@ -179,7 +179,7 @@
 
             <div class="flex gap-4 flex-wrap">
                 <div class="flex-1" style="min-width:180px;">
-                    <label class="block text-xs text-gray-500 mb-1">Type de réponse</label>
+                    <label for="new-q-type" class="block text-xs text-gray-500 mb-1">Type de réponse</label>
                     <select id="new-q-type" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500"
                             onchange="showNewConditional()">
                         <option value="text">Texte</option>
@@ -196,7 +196,7 @@
                     </select>
                 </div>
                 <div class="flex items-end gap-2">
-                    <label class="text-xs text-gray-500">Obligatoire</label>
+                    <span class="text-xs text-gray-500">Obligatoire</span>
                     <label class="toggle-switch">
                         <input type="checkbox" id="new-q-required" checked>
                         <span class="toggle-slider"></span>
@@ -206,7 +206,7 @@
 
             <!-- Conditional: options -->
             <div id="new-options-block" style="display:none;">
-                <label class="block text-xs text-gray-500 mb-1">Options (une par ligne)</label>
+                <label for="new-q-options" class="block text-xs text-gray-500 mb-1">Options (une par ligne)</label>
                 <textarea id="new-q-options" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
                           rows="3" placeholder="Option 1&#10;Option 2"></textarea>
             </div>
@@ -223,11 +223,11 @@
             <div id="new-scale-block" style="display:none;">
                 <div class="flex gap-4">
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1">Étiquette pour 1 <span class="text-red-500">*</span></label>
+                        <label for="new-scale-1" class="block text-xs text-gray-500 mb-1">Étiquette pour 1 <span class="text-red-500">*</span></label>
                         <input type="text" id="new-scale-1" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" maxlength="30">
                     </div>
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1">Étiquette pour 10 <span class="text-red-500">*</span></label>
+                        <label for="new-scale-10" class="block text-xs text-gray-500 mb-1">Étiquette pour 10 <span class="text-red-500">*</span></label>
                         <input type="text" id="new-scale-10" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" maxlength="30">
                     </div>
                 </div>
