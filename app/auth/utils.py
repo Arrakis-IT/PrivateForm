@@ -26,7 +26,9 @@ from app.auth.token_denylist import denylist
 
 # Pre-computed dummy hash to prevent user enumeration via timing attacks.
 # verify_password() is always called, even when the email doesn't exist.
-_DUMMY_HASH = bcrypt.hashpw(b"dummy-that-never-matches-any-real-password", bcrypt.gensalt()).decode()
+# Random value at startup so no hardcoded credential is present in source code.
+import os as _os
+_DUMMY_HASH = bcrypt.hashpw(_os.urandom(32), bcrypt.gensalt()).decode()
 
 def get_dummy_hash() -> str:
     """Returns a pre-computed dummy hash for timing-safe login checks."""
