@@ -19,7 +19,7 @@
         .pf-gradient { background: linear-gradient(135deg, #5FD4C4 0%, #4B8FDB 50%, #6B7FDB 100%); }
 
         .btn-primary {
-            background: linear-gradient(135deg, #4B8FDB, #6B7FDB);
+            background: linear-gradient(135deg, #1D4ED8, #4338CA);
             color: white; transition: opacity 0.2s;
         }
         .btn-primary:hover { opacity: 0.9; }
@@ -49,7 +49,7 @@
             transition:all 0.15s;display:flex;align-items:center;justify-content:center;
         }
         .scale-btn:hover { border-color:#4B8FDB; color:#4B8FDB; }
-        .scale-btn.selected { background:#4B8FDB; border-color:#4B8FDB; color:white; }
+        .scale-btn.selected { background:#1D4ED8; border-color:#1D4ED8; color:white; }
 
         /* Min 16px font (iOS zoom prevention) */
         input, select, textarea { font-size: 16px !important; }
@@ -337,10 +337,11 @@ function collectAnswers() {
                 value = block.querySelector(".answer-input").value;
                 break;
 
-            case "scale":
+            case "scale": {
                 const scaleBtnSel = block.querySelector(".scale-btn.selected");
                 value = scaleBtnSel ? scaleBtnSel.dataset.value : null;
                 break;
+            }
         }
         answers[id] = value;
     });
