@@ -109,52 +109,64 @@ def count_forms(db: Session, doctor_id: str) -> int:
     return db.query(Form).filter(Form.doctor_id == doctor_id).count()
 
 
+def _validate_question_text(text: str, errors: list) -> None:
+    if not text or len(text) < 5:
+        errors.append("La question doit contenir au moins 5 caractères.")
+    elif len(text) > 500:
+        errors.append("La question ne doit pas dépasser 500 caractères.")
+
+
+def _validate_question_type(q_type: str, errors: list) -> None:
+    if not q_type:
+        errors.append("Veuillez sélectionner un type de réponse.")
+    elif q_type not in VALID_QUESTION_TYPES:
+        errors.append("Type de réponse invalide.")
+
+
+def _validate_select_options(q: dict, errors: list) -> None:
+    options = q.get("options") or []
+    if not options or len(options) < 2:
+        errors.append("Vous devez avoir au moins 2 options.")
+    elif len(options) > settings.MAX_OPTIONS_PER_QUESTION:
+        errors.append(f"Maximum {settings.MAX_OPTIONS_PER_QUESTION} options autorisées.")
+
+
+def _validate_scale_labels(q: dict, errors: list) -> None:
+    label_1 = (q.get("scale_label_1") or "").strip()
+    label_10 = (q.get("scale_label_10") or "").strip()
+    if not label_1:
+        errors.append("L'étiquette pour 1 est obligatoire.")
+    elif len(label_1) > 30:
+        errors.append("L'étiquette pour 1 ne doit pas dépasser 30 caractères.")
+    if not label_10:
+        errors.append("L'étiquette pour 10 est obligatoire.")
+    elif len(label_10) > 30:
+        errors.append("L'étiquette pour 10 ne doit pas dépasser 30 caractères.")
+
+
+def _validate_single_question(q: dict) -> list[str]:
+    errors: list[str] = []
+    text = (q.get("text") or "").strip()
+    q_type = q.get("question_type") or ""
+    _validate_question_text(text, errors)
+    _validate_question_type(q_type, errors)
+    if q_type in ("select", "multiselect"):
+        _validate_select_options(q, errors)
+    if q_type == "scale":
+        _validate_scale_labels(q, errors)
+    return errors
+
+
 def validate_questions(questions_data: list[dict]) -> dict[int, list[str]]:
     """
     Validates all questions.
     Returns dict of {index: [errors]} only for questions with errors.
     """
-    errors = {}
-    for i, q in enumerate(questions_data):
-        q_errors = []
-
-        # Question text
-        text = (q.get("text") or "").strip()
-        if not text or len(text) < 5:
-            q_errors.append("La question doit contenir au moins 5 caractères.")
-        elif len(text) > 500:
-            q_errors.append("La question ne doit pas dépasser 500 caractères.")
-
-        # Answer type
-        q_type = q.get("question_type") or ""
-        if not q_type:
-            q_errors.append("Veuillez sélectionner un type de réponse.")
-        elif q_type not in VALID_QUESTION_TYPES:
-            q_errors.append("Type de réponse invalide.")
-
-        # Options for select/multiselect
-        if q_type in ("select", "multiselect"):
-            options = q.get("options") or []
-            if not options or len(options) < 2:
-                q_errors.append("Vous devez avoir au moins 2 options.")
-            elif len(options) > settings.MAX_OPTIONS_PER_QUESTION:
-                q_errors.append(f"Maximum {settings.MAX_OPTIONS_PER_QUESTION} options autorisées.")
-
-        # Scale labels (required)
-        if q_type == "scale":
-            if not q.get("scale_label_1") or len((q.get("scale_label_1") or "").strip()) == 0:
-                q_errors.append("L'étiquette pour 1 est obligatoire.")
-            elif len((q.get("scale_label_1") or "").strip()) > 30:
-                q_errors.append("L'étiquette pour 1 ne doit pas dépasser 30 caractères.")
-            if not q.get("scale_label_10") or len((q.get("scale_label_10") or "").strip()) == 0:
-                q_errors.append("L'étiquette pour 10 est obligatoire.")
-            elif len((q.get("scale_label_10") or "").strip()) > 30:
-                q_errors.append("L'étiquette pour 10 ne doit pas dépasser 30 caractères.")
-
-        if q_errors:
-            errors[i] = q_errors
-
-    return errors
+    return {
+        i: errs
+        for i, q in enumerate(questions_data)
+        if (errs := _validate_single_question(q))
+    }
 
 
 # =============================================================================
