@@ -369,7 +369,7 @@ function handleSubmitError(data) {
     } else if (data.error) {
         showGeneralError(data.error);
     }
-    if (globalThis.hcaptcha) { try { hcaptcha.reset(); } catch(e){} }
+    if (globalThis.hcaptcha) { try { hcaptcha.reset(); } catch {} }
 }
 
 async function submitForm() {
@@ -397,7 +397,7 @@ async function submitForm() {
         } else {
             handleSubmitError(data);
         }
-    } catch(e) {
+    } catch {
         document.getElementById("spinner-overlay").classList.remove("active");
         document.getElementById("submit-btn").disabled = false;
         showGeneralError("Erreur d'envoi. Si le problème persiste, contactez votre médecin.");
