@@ -50,6 +50,7 @@ VERIFY_RESULT_TEMPLATE = "auth/verify_result.html"
 LOGIN_TEMPLATE = "auth/login.html"
 FORGOT_PASSWORD_TEMPLATE = "auth/forgot_password.html"
 RESET_PASSWORD_TEMPLATE = "auth/reset_password.html"
+RESEND_VERIFICATION_TEMPLATE = "auth/resend_verification.html"
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -224,8 +225,8 @@ async def register_submit(request: Request, db: DbSession):
         verification_url=verification_url,
     )
 
-    logger.info(f"New doctor registered: {sanitize_log(doctor.email)}")
-    return RedirectResponse(url=f"/verify-pending?email={fd['email']}", status_code=302)
+    logger.info(f"New doctor registered: doctor_id={doctor.id}")
+    return RedirectResponse(url="/verify-pending", status_code=302)
 
 
 # =============================================================================
@@ -234,34 +235,38 @@ async def register_submit(request: Request, db: DbSession):
 
 @router.get("/verify-pending", response_class=HTMLResponse)
 async def verify_pending(request: Request):
-    email = request.query_params.get("email", "")
     return templates.TemplateResponse(request, VERIFY_PENDING_TEMPLATE, {
-        "email": email, "resend_error": None, "resend_success": False,
+        "resend_error": None, "resend_success": False,
     })
 
 
-@router.post("/verify-pending/resend", response_class=HTMLResponse)
+@router.get("/resend-verification", response_class=HTMLResponse)
+async def resend_verification_page(request: Request):
+    return templates.TemplateResponse(request, RESEND_VERIFICATION_TEMPLATE, {
+        "resend_error": None, "resend_success": False,
+    })
+
+
+@router.post("/resend-verification", response_class=HTMLResponse)
 async def resend_verification(request: Request, db: DbSession):
     form_data = await request.form()
     email = (form_data.get("email") or "").strip().lower()
 
     if brevo_quota.is_blocked():
-        return templates.TemplateResponse(request, VERIFY_PENDING_TEMPLATE, {
-            "email": email,
-            "resend_error": "Il n'est pas possible d'envoyer l'email de vérification en ce moment. Veuillez réessayer dans quelques minutes.",
+        return templates.TemplateResponse(request, RESEND_VERIFICATION_TEMPLATE, {
+            "resend_error": "Il n'est pas possible d'envoyer l'email en ce moment. Veuillez réessayer dans quelques minutes.",
             "resend_success": False,
         }, status_code=503)
 
     if not check_verification_resend(request):
-        return templates.TemplateResponse(request, VERIFY_PENDING_TEMPLATE, {
-            "email": email,
+        return templates.TemplateResponse(request, RESEND_VERIFICATION_TEMPLATE, {
             "resend_error": "Limite atteinte. Réessayez dans 24 heures.",
             "resend_success": False,
         })
 
     doctor = get_doctor_by_email(db, email)
     if not doctor or doctor.is_verified:
-        return RedirectResponse(url="/login", status_code=302)
+        return RedirectResponse(url=LOGIN_URL, status_code=302)
 
     token = generate_token()
     db.add(VerificationToken(
@@ -278,8 +283,8 @@ async def resend_verification(request: Request, db: DbSession):
         verification_url=verification_url,
     )
 
-    return templates.TemplateResponse(request, VERIFY_PENDING_TEMPLATE, {
-        "email": email, "resend_error": None, "resend_success": True,
+    return templates.TemplateResponse(request, RESEND_VERIFICATION_TEMPLATE, {
+        "resend_error": None, "resend_success": True,
     })
 
 
@@ -318,7 +323,7 @@ async def verify_email(request: Request, db: DbSession):
         doctor.is_verified = True
     db.commit()
 
-    logger.info(f"Email verified: {sanitize_log(doctor.email) if doctor else 'unknown'}")
+    logger.info(f"Email verified: doctor_id={doctor.id if doctor else 'unknown'}")
     return templates.TemplateResponse(request, VERIFY_RESULT_TEMPLATE, {
         "success": True, "context": "verification", "expired": False, "email": "",
     })
@@ -385,7 +390,7 @@ async def login_submit(request: Request, db: DbSession):
     response = RedirectResponse(url=DOCTOR_HOME_URL, status_code=302)
     set_auth_cookie(response, access_token)
 
-    logger.info(f"Successful login: {sanitize_log(doctor.email)}")
+    logger.info(f"Successful login: doctor_id={doctor.id}")
     return response
 
 
@@ -529,7 +534,7 @@ async def reset_password_submit(request: Request, db: DbSession):
             doctor_name=f"{doctor.first_name} {doctor.last_name}",
             change_timestamp=change_timestamp,
         )
-        logger.info(f"Password changed: {sanitize_log(doctor.email)}")
+        logger.info(f"Password changed: doctor_id={doctor.id}")
 
     return RedirectResponse(url="/login", status_code=302)
 
