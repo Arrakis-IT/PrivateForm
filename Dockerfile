@@ -5,6 +5,20 @@
 # Multi-stage build to optimize final image size
 # =============================================================================
 
+# --- Stage 0: Build Tailwind CSS ---
+FROM alpine:3.19 AS tailwind-builder
+
+RUN apk add --no-cache curl
+RUN curl -sSL https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.1/tailwindcss-linux-x64 \
+    -o /usr/local/bin/tailwindcss && chmod +x /usr/local/bin/tailwindcss
+
+WORKDIR /build
+COPY tailwind.config.js tailwind.input.css ./
+COPY app/templates/ ./app/templates/
+
+RUN tailwindcss -c tailwind.config.js -i tailwind.input.css -o app/static/css/tailwind.min.css --minify
+
+
 # --- Stage 1: Install dependencies ---
 FROM python:3.12-slim AS builder
 
@@ -45,6 +59,9 @@ WORKDIR /app
 
 # Copy app code
 COPY app/ ./app/
+
+# Inject Tailwind CSS built in stage 0
+COPY --from=tailwind-builder /build/app/static/css/tailwind.min.css ./app/static/css/tailwind.min.css
 COPY migrations/ ./migrations/
 COPY alembic.ini ./
 COPY scripts/ ./scripts/

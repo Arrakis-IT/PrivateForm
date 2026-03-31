@@ -14,6 +14,8 @@
 #
 # See LICENSE file for full terms.
 
+import secrets
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
@@ -47,11 +49,13 @@ async def lifespan(app: FastAPI):
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """
     Adds HTTP security headers to every response.
-    Protects against clickjacking, MIME sniffing, XSS, and session hijacking.
-    CSP uses 'unsafe-inline' for scripts because templates use inline JS.
-    Removing 'unsafe-inline' requires migrating to nonce-based CSP (future work).
+    Generates a per-request CSP nonce stored in request.state.csp_nonce so
+    templates can reference it in <script nonce="..."> and <style nonce="...">.
+    This allows removing 'unsafe-inline' from script-src and style-src.
     """
     async def dispatch(self, request: Request, call_next):
+        nonce = secrets.token_urlsafe(16)
+        request.state.csp_nonce = nonce
         response = await call_next(request)
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
@@ -61,9 +65,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://js.hcaptcha.com https://hcaptcha.com; "
-            "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://newassets.hcaptcha.com; "
-            "font-src 'self' https://cdnjs.cloudflare.com; "
+            f"script-src 'self' 'nonce-{nonce}' https://js.hcaptcha.com https://hcaptcha.com; "
+            "style-src 'self' 'unsafe-inline' https://newassets.hcaptcha.com; "
+            "font-src 'self'; "
             "img-src 'self' data: https://newassets.hcaptcha.com; "
             "frame-src https://newassets.hcaptcha.com; "
             "connect-src 'self' https://hcaptcha.com https://newassets.hcaptcha.com; "

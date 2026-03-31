@@ -36,12 +36,14 @@
                         <div>
                             <label for="reg-last-name" class="block text-sm font-medium text-gray-700 mb-1">Nom <span class="text-red-500">*</span></label>
                             <input type="text" id="reg-last-name" name="last_name" value="{{ form_data.last_name or '' }}" placeholder="Dupont"
+                                   autocomplete="family-name"
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                             {% if errors.last_name %}<p class="text-red-500 text-xs mt-1">{{ errors.last_name }}</p>{% endif %}
                         </div>
                         <div>
                             <label for="reg-first-name" class="block text-sm font-medium text-gray-700 mb-1">Prénom <span class="text-red-500">*</span></label>
                             <input type="text" id="reg-first-name" name="first_name" value="{{ form_data.first_name or '' }}" placeholder="Marie"
+                                   autocomplete="given-name"
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                             {% if errors.first_name %}<p class="text-red-500 text-xs mt-1">{{ errors.first_name }}</p>{% endif %}
                         </div>
@@ -50,6 +52,7 @@
                     <div>
                         <label for="reg-email" class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
                         <input type="email" id="reg-email" name="email" value="{{ form_data.email or '' }}" placeholder="docteur@exemple.com"
+                               autocomplete="email"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                         {% if errors.email %}<p class="text-red-500 text-xs mt-1">{{ errors.email }}</p>{% endif %}
                     </div>
@@ -57,6 +60,7 @@
                     <div>
                         <label for="password-input" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe <span class="text-red-500">*</span></label>
                         <input type="password" name="password" id="password-input" placeholder="Ex: MonCompte2024!"
+                               autocomplete="new-password"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                         {% if errors.password %}<p class="text-red-500 text-xs mt-1">{{ errors.password }}</p>{% endif %}
                         <div class="mt-2 space-y-1 pl-1">
@@ -90,7 +94,7 @@
                         {% if errors.specialty %}<p class="text-red-500 text-xs mt-1">{{ errors.specialty }}</p>{% endif %}
                     </div>
 
-                    <button type="button" onclick="goToStep(2)" id="btn-step1" disabled
+                    <button type="button" id="btn-step1" disabled
                             class="btn-primary w-full py-2.5 rounded-lg font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                         Continuer →
                     </button>
@@ -114,6 +118,7 @@
                     <div>
                         <label for="pdf-password-input" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe de chiffrement PDF <span class="text-red-500">*</span></label>
                         <input type="password" name="pdf_password" id="pdf-password-input" placeholder="Ex: MonPDF2024!"
+                               autocomplete="new-password"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                         {% if errors.pdf_password %}<p class="text-red-500 text-xs mt-1">{{ errors.pdf_password }}</p>{% endif %}
                         <div class="mt-2 space-y-1 pl-1">
@@ -141,8 +146,8 @@
                     </div>
 
                     <div class="flex gap-3">
-                        <button type="button" onclick="goToStep(1)" class="btn-outline flex-1 py-2.5 rounded-lg font-medium text-sm">← Retour</button>
-                        <button type="button" onclick="goToStep(3)" id="btn-step2" disabled
+                        <button type="button" id="btn-back-1" class="btn-outline flex-1 py-2.5 rounded-lg font-medium text-sm">← Retour</button>
+                        <button type="button" id="btn-step2" disabled
                                 class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed">Continuer →</button>
                     </div>
                 </div>
@@ -154,13 +159,14 @@
                     <div>
                         <label for="reg-phone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone <span class="text-gray-400">(optionnel)</span></label>
                         <input type="text" id="reg-phone" name="phone" value="{{ form_data.phone or '' }}" placeholder="+352 ..."
+                               autocomplete="tel"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                         {% if errors.phone %}<p class="text-red-500 text-xs mt-1">{{ errors.phone }}</p>{% endif %}
                     </div>
 
                     <div>
                         <label for="reg-country" class="block text-sm font-medium text-gray-700 mb-1">Pays / Région <span class="text-red-500">*</span></label>
-                        <select id="reg-country" name="country" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
+                        <select id="reg-country" name="country" autocomplete="country-name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500">
                             <option value="">— Choisir un pays —</option>
                             {% for country_name, _ in countries %}
                             <option value="{{ country_name }}" {% if form_data.country == country_name %}selected{% endif %}>{{ country_name }}</option>
@@ -196,8 +202,8 @@
                     {% endif %}
 
                     <div class="flex gap-3">
-                        <button type="button" onclick="goToStep(2)" class="btn-outline flex-1 py-2.5 rounded-lg font-medium text-sm">← Retour</button>
-                        <button type="button" onclick="submitForm()" class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm">Créer mon compte</button>
+                        <button type="button" id="btn-back-2" class="btn-outline flex-1 py-2.5 rounded-lg font-medium text-sm">← Retour</button>
+                        <button type="button" id="btn-submit" class="btn-primary flex-1 py-2.5 rounded-lg font-semibold text-sm">Créer mon compte</button>
                     </div>
                 </div>
 
@@ -208,7 +214,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 // Determine initial step from server-side errors
 {% if errors.pdf_password %}
 let currentStep = 2;
@@ -383,5 +389,12 @@ function toggleCheck(id, ok) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle("ok", ok);
 }
+
+// Button wiring
+document.getElementById("btn-step1").addEventListener("click", () => goToStep(2));
+document.getElementById("btn-back-1").addEventListener("click", () => goToStep(1));
+document.getElementById("btn-step2").addEventListener("click", () => goToStep(3));
+document.getElementById("btn-back-2").addEventListener("click", () => goToStep(2));
+document.getElementById("btn-submit").addEventListener("click", submitForm);
 </script>
 {% endblock %}

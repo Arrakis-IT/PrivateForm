@@ -9,13 +9,13 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <link rel="icon" type="image/png" href="/static/img/favicon.png">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/tailwind.min.css">
 
     {% if hcaptcha_site_key and hcaptcha_site_key != 'your_hcaptcha_site_key_here' %}
     <script src="https://hcaptcha.com/1/api.js"></script>
     {% endif %}
 
-    <style>
+    <style nonce="{{ request.state.csp_nonce }}">
         .pf-gradient { background: linear-gradient(135deg, #5FD4C4 0%, #4B8FDB 50%, #6B7FDB 100%); }
 
         .btn-primary {
@@ -161,9 +161,9 @@
             {% elif q.question_type == 'yes_no' %}
             <div class="flex gap-3">
                 <button type="button" class="yn-btn yes-btn flex-1 border-2 border-gray-200 rounded-lg py-2.5 text-sm font-medium text-gray-600 hover:border-green-400 hover:text-green-600 transition-colors"
-                        onclick="selectYN(this, 'oui')">Oui</button>
+                        data-yn="oui">Oui</button>
                 <button type="button" class="yn-btn no-btn flex-1 border-2 border-gray-200 rounded-lg py-2.5 text-sm font-medium text-gray-600 hover:border-red-400 hover:text-red-600 transition-colors"
-                        onclick="selectYN(this, 'non')">Non</button>
+                        data-yn="non">Non</button>
             </div>
 
             <!-- ============ SELECT ============ -->
@@ -221,7 +221,7 @@
                 </div>
                 <div class="flex gap-1.5 flex-wrap justify-center">
                     {% for i in range(1, 11) %}
-                    <button type="button" class="scale-btn" data-value="{{ i }}" onclick="selectScale(this)">{{ i }}</button>
+                    <button type="button" class="scale-btn" data-value="{{ i }}">{{ i }}</button>
                     {% endfor %}
                 </div>
             </div>
@@ -238,7 +238,7 @@
 
         <!-- Submit button -->
         <div class="pt-4">
-            <button type="button" id="submit-btn" onclick="submitForm()"
+            <button type="button" id="submit-btn"
                     class="btn-primary w-full py-3.5 rounded-xl font-semibold text-base">
                 Envoyer
             </button>
@@ -265,7 +265,7 @@
 <!-- =====================================================================
      SCRIPTS
      ===================================================== -->
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 // --------------------------------------------------------------------------
 // Yes/No toggle
 // --------------------------------------------------------------------------
@@ -403,6 +403,17 @@ async function submitForm() {
         showGeneralError("Erreur d'envoi. Si le problème persiste, contactez votre médecin.");
     }
 }
+
+// Button wiring (replaces inline onclick handlers)
+document.getElementById("submit-btn").addEventListener("click", submitForm);
+
+document.querySelectorAll(".yn-btn").forEach(btn => {
+    btn.addEventListener("click", () => selectYN(btn, btn.dataset.yn));
+});
+
+document.querySelectorAll(".scale-btn").forEach(btn => {
+    btn.addEventListener("click", () => selectScale(btn));
+});
 </script>
 </body>
 </html>

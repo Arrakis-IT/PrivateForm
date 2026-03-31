@@ -13,13 +13,13 @@
 
     <link rel="icon" type="image/png" href="/static/img/favicon.png">
 
-    <!-- TailwindCSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- TailwindCSS (local build) -->
+    <link rel="stylesheet" href="/static/css/tailwind.min.css">
 
-    <!-- Heroicons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <!-- Font Awesome (local) -->
+    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
 
-    <style>
+    <style nonce="{{ request.state.csp_nonce }}">
         /* =========================================================================
            PrivateForm — Custom Styles
            ========================================================================= */
@@ -200,7 +200,7 @@
         <div class="text-4xl mb-3">⏰</div>
         <h3 class="text-lg font-semibold text-gray-800 mb-2">Session expirée</h3>
         <p class="text-gray-500 text-sm mb-5">Votre session a expiré après 2 heures d'inactivité. Veuillez vous reconnectez.</p>
-        <button onclick="window.location.href='/login'" class="btn-primary px-6 py-2 rounded-lg font-medium">
+        <button id="btn-session-login" class="btn-primary px-6 py-2 rounded-lg font-medium">
             Se reconnectez
         </button>
     </div>
@@ -215,8 +215,8 @@
         <h3 class="text-lg font-semibold text-gray-800 mb-2">Modifications non sauvegardées</h3>
         <p class="text-gray-500 text-sm mb-5">Vous avez des modifications non sauvegardées. Si vous quittez, elles seront perdues.</p>
         <div class="flex justify-center gap-3">
-            <button onclick="closeUnsavedModal()" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Rester</button>
-            <button onclick="confirmNavigation()" class="btn-primary px-4 py-2 rounded-lg font-medium text-sm">Quitter</button>
+            <button id="btn-unsaved-stay" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Rester</button>
+            <button id="btn-unsaved-leave" class="btn-primary px-4 py-2 rounded-lg font-medium text-sm">Quitter</button>
         </div>
     </div>
 </div>
@@ -230,8 +230,8 @@
         <h3 class="text-lg font-semibold text-gray-800 mb-2">Supprimer le formulaire</h3>
         <p class="text-gray-500 text-sm mb-5">Cette action est irréversible. Le formulaire et toutes ses questions seront définitivement supprimés.</p>
         <div class="flex justify-center gap-3">
-            <button onclick="closeDeleteModal()" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Annuler</button>
-            <button onclick="confirmDelete()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm">Supprimer</button>
+            <button id="btn-delete-cancel" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Annuler</button>
+            <button id="btn-delete-confirm" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm">Supprimer</button>
         </div>
     </div>
 </div>
@@ -245,10 +245,10 @@
         <div id="share-qr" class="flex justify-center mb-4"></div>
         <p id="share-url" class="text-sm text-gray-600 mb-4 break-all"></p>
         <div class="flex justify-center gap-3">
-            <button onclick="copyShareUrl()" id="copy-btn" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Copier l'URL</button>
-            <button onclick="downloadQR()" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Télécharger le QR</button>
+            <button id="copy-btn" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Copier l'URL</button>
+            <button id="btn-download-qr" class="btn-outline px-4 py-2 rounded-lg font-medium text-sm">Télécharger le QR</button>
         </div>
-        <button onclick="closeShareModal()" class="mt-4 text-gray-400 text-sm hover:text-gray-600">Fermer</button>
+        <button id="btn-share-close" class="mt-4 text-gray-400 text-sm hover:text-gray-600">Fermer</button>
     </div>
 </div>
 
@@ -288,7 +288,7 @@
 <!-- =====================================================================
      SCRIPTS
      ===================================================== -->
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 // ==========================================================================
 // Toast system
 // ==========================================================================
@@ -296,7 +296,14 @@ function showToast(message, type = "success") {
     const container = document.getElementById("toast-container");
     const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
-    toast.innerHTML = `<span>${message}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+    const text = document.createElement("span");
+    text.textContent = message;
+    const close = document.createElement("span");
+    close.className = "toast-close";
+    close.textContent = "✕";
+    close.addEventListener("click", () => toast.remove());
+    toast.appendChild(text);
+    toast.appendChild(close);
     container.appendChild(toast);
     setTimeout(() => { if (toast.parentElement) toast.remove(); }, 3000);
 }
@@ -385,6 +392,20 @@ function showSpinner(text = "Envoi en cours...") {
 function hideSpinner() {
     document.getElementById("spinner-overlay").classList.remove("active");
 }
+
+// ==========================================================================
+// Modal button wiring (replaces inline onclick handlers)
+// ==========================================================================
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("btn-session-login")?.addEventListener("click", () => { globalThis.location.href = "/login"; });
+    document.getElementById("btn-unsaved-stay")?.addEventListener("click", closeUnsavedModal);
+    document.getElementById("btn-unsaved-leave")?.addEventListener("click", confirmNavigation);
+    document.getElementById("btn-delete-cancel")?.addEventListener("click", closeDeleteModal);
+    document.getElementById("btn-delete-confirm")?.addEventListener("click", confirmDelete);
+    document.getElementById("copy-btn")?.addEventListener("click", copyShareUrl);
+    document.getElementById("btn-download-qr")?.addEventListener("click", downloadQR);
+    document.getElementById("btn-share-close")?.addEventListener("click", closeShareModal);
+});
 
 // ==========================================================================
 // Session check — polls every 30s to detect 401

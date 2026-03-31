@@ -7,7 +7,7 @@
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <!-- Back button with unsaved check -->
-            <button onclick="navigateBack()" class="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1 text-sm">
+            <button id="btn-nav-back" class="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
@@ -20,8 +20,8 @@
             </a>
         </div>
         <div class="flex items-center gap-2">
-            <button onclick="submitForm(false)" class="btn-outline px-4 py-1.5 rounded-lg font-medium text-sm">Enregistrer</button>
-            <button onclick="submitForm(true)" class="btn-primary px-4 py-1.5 rounded-lg font-medium text-sm">Enregistrer et retourner</button>
+            <button id="btn-save-nav" class="btn-outline px-4 py-1.5 rounded-lg font-medium text-sm">Enregistrer</button>
+            <button id="btn-save-return-nav" class="btn-primary px-4 py-1.5 rounded-lg font-medium text-sm">Enregistrer et retourner</button>
         </div>
     </div>
 </nav>
@@ -38,13 +38,13 @@
                maxlength="100"
                placeholder="Ex : Consultation initiale"
                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500"
-               oninput="markDirty()">
+               >
         <div class="flex justify-between mt-1">
             <span id="name-error" class="text-red-500 text-xs hidden">{{ errors.name or '' }}</span>
             <span class="char-counter text-xs text-gray-400" id="name-counter">{{ form_name|length }}/100</span>
         </div>
         {% if errors.name %}
-        <script>document.getElementById("name-error").classList.remove("hidden");</script>
+        <script nonce="{{ request.state.csp_nonce }}">document.getElementById("name-error").classList.remove("hidden");</script>
         {% endif %}
     </div>
 
@@ -61,13 +61,13 @@
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Question {{ loop.index }}</span>
                 <div class="flex items-center gap-1">
-                    <button onclick="moveQuestion(this, -1)" class="text-gray-300 hover:text-blue-500 p-1" title="Monter">
+                    <button data-action="move-up" class="text-gray-300 hover:text-blue-500 p-1" title="Monter">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
                     </button>
-                    <button onclick="moveQuestion(this, 1)" class="text-gray-300 hover:text-blue-500 p-1" title="Descendre">
+                    <button data-action="move-down" class="text-gray-300 hover:text-blue-500 p-1" title="Descendre">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
-                    <button onclick="deleteQuestion(this)" class="text-gray-300 hover:text-red-500 p-1 ml-1" title="Supprimer">
+                    <button data-action="delete-question" class="text-gray-300 hover:text-red-500 p-1 ml-1" title="Supprimer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -77,7 +77,7 @@
             <div class="mb-3">
                 <textarea class="q-text w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
                           rows="2" maxlength="500" placeholder="Texte de la question"
-                          oninput="markDirty(); updateCounter(this, 500)">{{ q.text }}</textarea>
+                          >{{ q.text }}</textarea>
                 <div class="flex justify-between mt-1">
                     {% if question_errors[loop.index0] and 'text' in question_errors[loop.index0] %}
                     <span class="text-red-500 text-xs">{{ question_errors[loop.index0].text }}</span>
@@ -93,7 +93,7 @@
                 <div class="flex-1">
                     <label for="q{{ loop.index0 }}-type" class="block text-xs text-gray-500 mb-1">Type de réponse</label>
                     <select id="q{{ loop.index0 }}-type" class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500"
-                            onchange="markDirty(); handleTypeChange(this)">
+                            >
                         <option value="text" {% if q.question_type == 'text' %}selected{% endif %}>Texte</option>
                         <option value="text_long" {% if q.question_type == 'text_long' %}selected{% endif %}>Texte long</option>
                         <option value="yes_no" {% if q.question_type == 'yes_no' %}selected{% endif %}>Oui / Non</option>
@@ -110,7 +110,7 @@
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-500">Obligatoire</span>
                     <label class="toggle-switch" aria-label="Obligatoire">
-                        <input type="checkbox" class="q-required" {% if q.is_required %}checked{% endif %} onchange="markDirty()">
+                        <input type="checkbox" class="q-required" {% if q.is_required %}checked{% endif %}>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -121,7 +121,7 @@
                 <label for="q{{ loop.index0 }}-options" class="block text-xs text-gray-500 mb-1">Options (une par ligne, min 2, max 10)</label>
                 <textarea id="q{{ loop.index0 }}-options" class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
                           rows="3" placeholder="Option 1&#10;Option 2&#10;Option 3"
-                          oninput="markDirty()">{% if q.options %}{{ q.options | join('\n') }}{% endif %}</textarea>
+                          >{% if q.options %}{{ q.options | join('\n') }}{% endif %}</textarea>
                 {% if question_errors[loop.index0] and 'options' in question_errors[loop.index0] %}
                 <p class="text-red-500 text-xs mt-1">{{ question_errors[loop.index0].options }}</p>
                 {% endif %}
@@ -129,7 +129,7 @@
 
             <div class="q-number-block" style="{% if q.question_type != 'number' %}display:none;{% endif %}">
                 <label class="flex items-center gap-2">
-                    <input type="checkbox" class="q-decimals" {% if q.allow_decimals %}checked{% endif %} onchange="markDirty()">
+                    <input type="checkbox" class="q-decimals" {% if q.allow_decimals %}checked{% endif %}>
                     <span class="text-xs text-gray-500">Permettre les décimales</span>
                 </label>
             </div>
@@ -139,12 +139,12 @@
                     <div class="flex-1">
                         <label for="q{{ loop.index0 }}-scale1" class="block text-xs text-gray-500 mb-1">Étiquette pour 1 <span class="text-red-500">*</span></label>
                         <input type="text" id="q{{ loop.index0 }}-scale1" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500"
-                               maxlength="30" value="{{ q.scale_label_1 or '' }}" oninput="markDirty()">
+                               maxlength="30" value="{{ q.scale_label_1 or '' }}">
                     </div>
                     <div class="flex-1">
                         <label for="q{{ loop.index0 }}-scale10" class="block text-xs text-gray-500 mb-1">Étiquette pour 10 <span class="text-red-500">*</span></label>
                         <input type="text" id="q{{ loop.index0 }}-scale10" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500"
-                               maxlength="30" value="{{ q.scale_label_10 or '' }}" oninput="markDirty()">
+                               maxlength="30" value="{{ q.scale_label_10 or '' }}">
                     </div>
                 </div>
                 {% if question_errors[loop.index0] and 'scale' in question_errors[loop.index0] %}
@@ -171,7 +171,7 @@
                 <label for="new-q-text" class="block text-xs text-gray-500 mb-1">Question <span class="text-red-500">*</span></label>
                 <textarea id="new-q-text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
                           rows="2" maxlength="500" placeholder="Texte de la question"
-                          oninput="updateCounter(this, 500)"></textarea>
+                          ></textarea>
                 <div class="flex justify-end mt-1">
                     <span class="char-counter text-xs text-gray-400">0/500</span>
                 </div>
@@ -181,7 +181,7 @@
                 <div class="flex-1" style="min-width:180px;">
                     <label for="new-q-type" class="block text-xs text-gray-500 mb-1">Type de réponse</label>
                     <select id="new-q-type" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500"
-                            onchange="showNewConditional()">
+                            >
                         <option value="text">Texte</option>
                         <option value="text_long">Texte long</option>
                         <option value="yes_no">Oui / Non</option>
@@ -233,7 +233,7 @@
                 </div>
             </div>
 
-            <button onclick="addQuestion()" class="btn-outline px-5 py-2 rounded-lg font-medium text-sm w-full">
+            <button id="btn-add-question" class="btn-outline px-5 py-2 rounded-lg font-medium text-sm w-full">
                 + Ajouter
             </button>
         </div>
@@ -244,14 +244,14 @@
 
     <!-- Bottom save buttons (centered) -->
     <div class="flex justify-center gap-3 mt-8">
-        <button onclick="submitForm(false)" class="btn-outline px-6 py-2.5 rounded-lg font-medium text-sm">Enregistrer</button>
-        <button onclick="submitForm(true)" class="btn-primary px-6 py-2.5 rounded-lg font-medium text-sm">Enregistrer et retourner</button>
+        <button id="btn-save-bottom" class="btn-outline px-6 py-2.5 rounded-lg font-medium text-sm">Enregistrer</button>
+        <button id="btn-save-return-bottom" class="btn-primary px-6 py-2.5 rounded-lg font-medium text-sm">Enregistrer et retourner</button>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 // --------------------------------------------------------------------------
 // State
 // --------------------------------------------------------------------------
@@ -379,26 +379,26 @@ function addQuestion() {
         <div class="flex items-center justify-between mb-3">
             <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Question ${currentCount + 1}</span>
             <div class="flex items-center gap-1">
-                <button onclick="moveQuestion(this, -1)" class="text-gray-300 hover:text-blue-500 p-1">
+                <button data-action="move-up" class="text-gray-300 hover:text-blue-500 p-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
                 </button>
-                <button onclick="moveQuestion(this, 1)" class="text-gray-300 hover:text-blue-500 p-1">
+                <button data-action="move-down" class="text-gray-300 hover:text-blue-500 p-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <button onclick="deleteQuestion(this)" class="text-gray-300 hover:text-red-500 p-1 ml-1">
+                <button data-action="delete-question" class="text-gray-300 hover:text-red-500 p-1 ml-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
         </div>
         <div class="mb-3">
             <textarea class="q-text w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
-                      rows="2" maxlength="500" oninput="markDirty(); updateCounter(this, 500)">${text}</textarea>
+                      rows="2" maxlength="500">${text}</textarea>
             <div class="flex justify-end mt-1"><span class="char-counter text-xs text-gray-400">${text.length}/500</span></div>
         </div>
         <div class="flex items-center gap-4 mb-3">
             <div class="flex-1">
                 <span class="block text-xs text-gray-500 mb-1">Type de réponse</span>
-                <select class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500" aria-label="Type de réponse" onchange="markDirty(); handleTypeChange(this)">
+                <select class="q-type w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:border-blue-500" aria-label="Type de réponse">
                     <option value="text" ${type==='text'?'selected':''}>Texte</option>
                     <option value="text_long" ${type==='text_long'?'selected':''}>Texte long</option>
                     <option value="yes_no" ${type==='yes_no'?'selected':''}>Oui / Non</option>
@@ -414,12 +414,12 @@ function addQuestion() {
             </div>
             <div class="flex items-end gap-2">
                 <span class="text-xs text-gray-500">Obligatoire</span>
-                <label class="toggle-switch" aria-label="Obligatoire"><input type="checkbox" class="q-required" ${required?'checked':''} onchange="markDirty()"><span class="toggle-slider"></span></label>
+                <label class="toggle-switch" aria-label="Obligatoire"><input type="checkbox" class="q-required" ${required?'checked':''}><span class="toggle-slider"></span></label>
             </div>
         </div>
         <div class="q-options-block" style="${(type==='select'||type==='multiselect')?'':'display:none;'}">
             <span class="block text-xs text-gray-500 mb-1">Options (une par ligne)</span>
-            <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" rows="3" aria-label="Options (une par ligne)" oninput="markDirty()">${document.getElementById('new-q-options').value}</textarea>
+            <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" rows="3" aria-label="Options (une par ligne)">${document.getElementById('new-q-options').value}</textarea>
         </div>
         <div class="q-number-block" style="${type==='number'?'':'display:none;'}">
             <label class="flex items-center gap-2"><input type="checkbox" class="q-decimals" ${document.getElementById('new-q-decimals').checked?'checked':''}><span class="text-xs text-gray-500">Permettre les décimales</span></label>
@@ -524,8 +524,40 @@ function navigateBack() {
     if (isDirty) {
         showUnsavedModal("/doctor/home");
     } else {
-        window.location.href = "/doctor/home";
+        globalThis.location.href = "/doctor/home";
     }
 }
+
+// --------------------------------------------------------------------------
+// Button wiring (replaces all inline onclick/oninput/onchange handlers)
+// --------------------------------------------------------------------------
+document.getElementById("btn-nav-back").addEventListener("click", navigateBack);
+document.getElementById("btn-save-nav").addEventListener("click", () => submitForm(false));
+document.getElementById("btn-save-return-nav").addEventListener("click", () => submitForm(true));
+document.getElementById("btn-save-bottom").addEventListener("click", () => submitForm(false));
+document.getElementById("btn-save-return-bottom").addEventListener("click", () => submitForm(true));
+document.getElementById("btn-add-question").addEventListener("click", addQuestion);
+document.getElementById("form-name-input").addEventListener("input", markDirty);
+document.getElementById("new-q-text").addEventListener("input", function() { updateCounter(this, 500); });
+document.getElementById("new-q-type").addEventListener("change", showNewConditional);
+
+// Event delegation for question cards (handles both static and dynamically added cards)
+document.getElementById("questions-list").addEventListener("click", function(e) {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    if (btn.dataset.action === "move-up")         moveQuestion(btn, -1);
+    else if (btn.dataset.action === "move-down")  moveQuestion(btn, 1);
+    else if (btn.dataset.action === "delete-question") deleteQuestion(btn);
+});
+document.getElementById("questions-list").addEventListener("input", function(e) {
+    const t = e.target;
+    if (t.matches(".q-text"))              { markDirty(); updateCounter(t, 500); }
+    else if (t.matches(".q-options, .q-scale-1, .q-scale-10")) markDirty();
+});
+document.getElementById("questions-list").addEventListener("change", function(e) {
+    const t = e.target;
+    if (t.matches(".q-type"))              handleTypeChange(t);
+    else if (t.matches(".q-required, .q-decimals")) markDirty();
+});
 </script>
 {% endblock %}

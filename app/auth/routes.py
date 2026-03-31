@@ -43,6 +43,7 @@ from app.core.logging import get_logger, sanitize_log
 logger = get_logger("auth.routes")
 
 DOCTOR_HOME_URL = "/doctor/home"
+LOGIN_URL = "/login"
 DbSession = Annotated[Session, Depends(get_db)]
 REGISTER_TEMPLATE = "auth/register.html"
 VERIFY_PENDING_TEMPLATE = "auth/verify_pending.html"

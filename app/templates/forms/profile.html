@@ -103,7 +103,7 @@
             </div>
 
             <!-- Save button -->
-            <button onclick="saveProfile()" class="btn-primary w-full py-2.5 rounded-lg font-medium text-sm mt-2">
+            <button id="btn-save-profile" class="btn-primary w-full py-2.5 rounded-lg font-medium text-sm mt-2">
                 Mettre à jour le profil
             </button>
         </div>
@@ -123,7 +123,7 @@
             </div>
             <div>
                 <label for="pw-new" class="block text-xs font-medium text-gray-500 mb-1">Nouveau mot de passe <span class="text-red-500">*</span></label>
-                <input type="password" id="pw-new" oninput="checkNewPw()"
+                <input type="password" id="pw-new"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
                 <!-- Mini checklist -->
                 <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5">
@@ -138,7 +138,7 @@
                 <input type="password" id="pw-confirm"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
             </div>
-            <button onclick="changePassword()" class="btn-outline w-full py-2 rounded-lg font-medium text-sm">
+            <button id="btn-change-password" class="btn-outline w-full py-2 rounded-lg font-medium text-sm">
                 Changer le mot de passe
             </button>
         </div>
@@ -156,7 +156,7 @@
                 <label for="pdf-pw-new" class="block text-xs font-medium text-gray-500 mb-1">Nouveau mot de passe PDF <span class="text-red-500">*</span></label>
                 <input type="password" id="pdf-pw-new"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 pr-10">
-                <button onclick="toggleVisibility('pdf-pw-new')" class="absolute right-3 top-7 text-gray-400 hover:text-gray-600">
+                <button id="btn-toggle-pdf-pw" class="absolute right-3 top-7 text-gray-400 hover:text-gray-600">
                     <svg class="w-4 h-4" id="pdf-eye" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7s-8.268-2.943-9.542-7z"/>
@@ -168,7 +168,7 @@
                 <input type="password" id="pdf-pw-confirm"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500">
             </div>
-            <button onclick="changePdfPassword()" class="btn-outline w-full py-2 rounded-lg font-medium text-sm">
+            <button id="btn-change-pdf-password" class="btn-outline w-full py-2 rounded-lg font-medium text-sm">
                 Mettre à jour le mot de passe PDF
             </button>
         </div>
@@ -180,7 +180,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-red-200 p-6">
         <h2 class="text-base font-semibold text-red-700 mb-1">Zone de danger</h2>
         <p class="text-xs text-gray-400 mb-4">La suppression de votre compte est <strong>définitive et irréversible</strong>. Tous vos formulaires et données seront effacés.</p>
-        <button onclick="openDeleteModal()" class="w-full py-2.5 rounded-lg font-medium text-sm text-white bg-red-600 hover:bg-red-700 transition-colors">
+        <button id="btn-open-delete-modal" class="w-full py-2.5 rounded-lg font-medium text-sm text-white bg-red-600 hover:bg-red-700 transition-colors">
             Supprimer mon compte définitivement
         </button>
     </div>
@@ -198,10 +198,10 @@
                placeholder="Mot de passe de connexion"
                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-red-500 mb-4">
         <div class="flex gap-3">
-            <button onclick="closeDeleteModal()" class="flex-1 py-2 rounded-lg font-medium text-sm border border-gray-300 text-gray-600 hover:bg-gray-50">
+            <button id="btn-cancel-delete-account" class="flex-1 py-2 rounded-lg font-medium text-sm border border-gray-300 text-gray-600 hover:bg-gray-50">
                 Annuler
             </button>
-            <button onclick="deleteAccount()" class="flex-1 py-2 rounded-lg font-medium text-sm text-white bg-red-600 hover:bg-red-700">
+            <button id="btn-confirm-delete-account" class="flex-1 py-2 rounded-lg font-medium text-sm text-white bg-red-600 hover:bg-red-700">
                 Supprimer définitivement
             </button>
         </div>
@@ -211,7 +211,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 // --------------------------------------------------------------------------
 // Save profile
 // --------------------------------------------------------------------------
@@ -335,5 +335,17 @@ async function deleteAccount() {
         }
     } catch { showToast("Erreur réseau.", "error"); }
 }
+
+// Button wiring
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("btn-save-profile").addEventListener("click", saveProfile);
+    document.getElementById("pw-new").addEventListener("input", checkNewPw);
+    document.getElementById("btn-change-password").addEventListener("click", changePassword);
+    document.getElementById("btn-toggle-pdf-pw").addEventListener("click", () => toggleVisibility("pdf-pw-new"));
+    document.getElementById("btn-change-pdf-password").addEventListener("click", changePdfPassword);
+    document.getElementById("btn-open-delete-modal").addEventListener("click", openDeleteModal);
+    document.getElementById("btn-cancel-delete-account").addEventListener("click", closeDeleteModal);
+    document.getElementById("btn-confirm-delete-account").addEventListener("click", deleteAccount);
+});
 </script>
 {% endblock %}

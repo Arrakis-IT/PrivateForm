@@ -16,7 +16,7 @@
 
         <!-- User dropdown -->
         <div class="relative">
-            <button onclick="toggleDropdown()" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <button id="btn-dropdown" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                 <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     <span class="text-blue-600 font-semibold text-sm">{{ doctor.first_name[0] }}{{ doctor.last_name[0] }}</span>
                 </div>
@@ -106,7 +106,7 @@
                     </a>
 
                     <!-- Toggle active/inactive -->
-                    <button onclick="toggleForm('{{ form.id }}', {{ 'true' if form.is_active else 'false' }})" class="p-1.5" title="{{ 'Désactiver' if form.is_active else 'Activer' }}">
+                    <button class="p-1.5" title="{{ 'Désactiver' if form.is_active else 'Activer' }}" data-action="toggle-form" data-id="{{ form.id }}" data-active="{{ 'true' if form.is_active else 'false' }}">
                         <label class="toggle-switch" style="width:40px;height:22px;">
                             <input type="checkbox" {% if form.is_active %}checked{% endif %} disabled>
                             <span class="toggle-slider" style="height:22px;border-radius:11px;"></span>
@@ -114,7 +114,7 @@
                     </button>
 
                     <!-- Share -->
-                    <button onclick="shareForm('{{ form.id }}')" class="text-gray-400 hover:text-blue-600 transition-colors p-1.5" title="Partager">
+                    <button class="text-gray-400 hover:text-blue-600 transition-colors p-1.5" title="Partager" data-action="share-form" data-id="{{ form.id }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342c.886.894 2.425.894 3.312 0l4.24-4.49c.886-.894.886-2.343 0-3.237s-2.425-.894-3.312 0L8.684 10.105M15.316 10.658c-.886-.894-2.425-.894-3.312 0l-4.24 4.49c-.886.894-.886 2.343 0 3.237s2.425.894 3.312 0l4.24-4.49c.886-.894.886-2.343 0-3.237z"/>
                         </svg>
@@ -122,7 +122,7 @@
 
                     <!-- Delete (hidden for example form) -->
                     {% if not form.is_example %}
-                    <button onclick="showDeleteModal('{{ form.id }}')" class="text-gray-400 hover:text-red-500 transition-colors p-1.5" title="Supprimer">
+                    <button class="text-gray-400 hover:text-red-500 transition-colors p-1.5" title="Supprimer" data-action="delete-form" data-id="{{ form.id }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
@@ -155,7 +155,7 @@
          HELP PANEL
          ================================================================ -->
     <div class="mt-8">
-        <button onclick="toggleHelp()" class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-3">
+        <button id="btn-help" class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-3">
             <div class="w-6 h-6 rounded-full border-2 border-gray-400 flex items-center justify-center text-xs font-bold text-gray-500">?</div>
             <span id="help-toggle-label">Afficher l'aide</span>
         </button>
@@ -164,7 +164,7 @@
 
             <!-- Section 1 -->
             <div class="border-b border-gray-100">
-                <button onclick="toggleSection('help-1')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                <button data-section="help-1"" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
                     <span class="text-sm font-semibold text-gray-700">Créer et gérer des formulaires</span>
                     <svg id="help-1-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
@@ -177,7 +177,7 @@
 
             <!-- Section 2 -->
             <div class="border-b border-gray-100">
-                <button onclick="toggleSection('help-2')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                <button data-section="help-2"" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
                     <span class="text-sm font-semibold text-gray-700">Ajouter des questions</span>
                     <svg id="help-2-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
@@ -190,7 +190,7 @@
 
             <!-- Section 3 -->
             <div class="border-b border-gray-100">
-                <button onclick="toggleSection('help-3')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                <button data-section="help-3"" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
                     <span class="text-sm font-semibold text-gray-700">Enregistrer et éditer</span>
                     <svg id="help-3-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
@@ -206,7 +206,7 @@
 
             <!-- Section 4 -->
             <div class="border-b border-gray-100">
-                <button onclick="toggleSection('help-4')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                <button data-section="help-4"" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
                     <span class="text-sm font-semibold text-gray-700">Activer et désactiver un formulaire</span>
                     <svg id="help-4-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
@@ -222,7 +222,7 @@
 
             <!-- Section 5 -->
             <div>
-                <button onclick="toggleSection('help-5')" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                <button data-section="help-5"" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
                     <span class="text-sm font-semibold text-gray-700">Partager le formulaire avec les patients</span>
                     <svg id="help-5-icon" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
@@ -243,7 +243,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 // --------------------------------------------------------------------------
 // Dropdown toggle
 // --------------------------------------------------------------------------
@@ -323,8 +323,28 @@ function toggleSection(id) {
         }
     }
 })();
+
+// Button wiring (replaces inline onclick handlers)
+document.getElementById("btn-dropdown")?.addEventListener("click", toggleDropdown);
+document.getElementById("btn-help")?.addEventListener("click", toggleHelp);
+
+// Help section toggles via data-section attribute
+document.querySelectorAll("[data-section]").forEach(btn => {
+    btn.addEventListener("click", () => toggleSection(btn.dataset.section));
+});
+
+// Form action buttons via data-action attribute (event delegation)
+document.addEventListener("click", function(e) {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if (action === "toggle-form") toggleForm(id, btn.dataset.active === "true");
+    else if (action === "share-form") shareForm(id);
+    else if (action === "delete-form") showDeleteModal(id);
+});
 </script>
-<style>
+<style nonce="{{ request.state.csp_nonce }}">
 .toggle-switch {
     position: relative;
     display: inline-block;
@@ -372,5 +392,5 @@ function toggleSection(id) {
 }
 </style>
 
-<script>
+<script nonce="{{ request.state.csp_nonce }}">
 {% endblock %}
