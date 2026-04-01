@@ -30,7 +30,7 @@ services:
       PDF_MASTER_KEY_FILE: /run/secrets/pdf_master_key
     volumes:
       - logs:/app/logs
-      - static_files:/app/app/static
+      - static_img:/app/app/static/img
     secrets:
       - db_password
       - jwt_secret
@@ -93,7 +93,7 @@ services:
       - /etc/privateform/.htpasswd:/etc/nginx/.htpasswd:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
-      - static_files:/usr/share/nginx/html/static
+      - static_img:/usr/share/nginx/html/static/img
     networks:
       - privateform_net
     restart: unless-stopped
@@ -109,7 +109,7 @@ services:
 volumes:
   pgdata:                    # PostgreSQL data (persistent)
   logs:                      # Application logs
-  static_files:              # Static files shared between the app and nginx
+  static_img:                # Logo and favicons (user-uploaded, persistent across deploys)
 
 # -----------------------------------------------------------------------------
 # Networks
