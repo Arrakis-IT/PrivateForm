@@ -165,7 +165,7 @@ VALID_QUESTION_TYPES = [
     "email",          # Email
     "phone",          # Phone
     "scale",          # Scale 1-10
-    "matricule",      # Luxembourg social security number (11 digits)
+    "matricule",      # Luxembourg social security number (13 digits)
 ]
 
 # -----------------------------------------------------------------------------

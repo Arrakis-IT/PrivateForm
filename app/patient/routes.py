@@ -184,8 +184,8 @@ def _validate_type_matricule(answer, q_text: str, question: dict) -> str | None:
     if not isinstance(answer, str):
         return f"Matricule invalide pour « {q_text} »."
     digits_only = answer.replace(" ", "").replace("-", "")
-    if not digits_only.isdigit() or len(digits_only) != 11:
-        return "Le matricule doit contenir exactement 11 chiffres."
+    if not digits_only.isdigit() or len(digits_only) != 13:
+        return "Le matricule doit contenir exactement 13 chiffres."
     return None
 
 
