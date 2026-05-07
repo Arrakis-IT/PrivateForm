@@ -16,7 +16,6 @@
 #
 # See LICENSE file for full terms.
 
-
 import sys
 from zoneinfo import ZoneInfo
 from datetime import datetime
