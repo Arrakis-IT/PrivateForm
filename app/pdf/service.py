@@ -192,7 +192,7 @@ class PrivateFormPDF(FPDF):
             self.image(watermark_buffer, x=x, y=y, w=img_width)
 
         except Exception as e:
-            logger.error(f"Error adding watermark: {e}")
+            logger.exception(f"Error adding watermark: {e}")
 
 
 QUESTION_TYPE_LABELS = {
@@ -322,7 +322,7 @@ def encrypt_pdf(pdf_bytes: bytes, password: str) -> bytes:
         return output_buffer.getvalue()
 
     except Exception as e:
-        logger.error(f"Error encrypting PDF: {e}")
+        logger.exception(f"Error encrypting PDF: {e}")
         raise
 
 

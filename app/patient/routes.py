@@ -420,5 +420,5 @@ async def _verify_hcaptcha(token: str) -> bool:
             data = response.json()
             return data.get("success", False)
     except Exception as e:
-        logger.error(f"Error verifying hCaptcha: {e}")
+        logger.exception(f"Error verifying hCaptcha: {e}")
         return False

@@ -64,7 +64,7 @@ async def _fetch_brevo_stats() -> dict:
                 "error": None,
             }
     except Exception as e:
-        logger.error(f"Error fetching Brevo stats: {e}")
+        logger.exception(f"Error fetching Brevo stats: {e}")
         return {"total_sent": None, "delivered": None, "bounces": None, "error": str(e)}
 
 
@@ -96,7 +96,7 @@ async def _fetch_brevo_today_stats() -> dict:
                 "error": None,
             }
     except Exception as e:
-        logger.error(f"Error fetching Brevo today stats: {e!r}")
+        logger.exception(f"Error fetching Brevo today stats: {e!r}")
         return {"total_sent": None, "delivered": None, "bounces": None, "error": str(e)}
 
 
@@ -131,7 +131,7 @@ async def _fetch_brevo_daily_stats() -> list[dict]:
                 for r in sorted(reports, key=lambda x: x.get("date", ""), reverse=True)
             ]
     except Exception as e:
-        logger.error(f"Error fetching Brevo daily stats: {e!r}")
+        logger.exception(f"Error fetching Brevo daily stats: {e!r}")
         return []
 
 

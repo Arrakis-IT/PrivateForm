@@ -80,7 +80,7 @@ async def _send_email(
             response.raise_for_status()
             logger.info(f"Email sent successfully to {_obfuscate_email(to_email)}: {subject}")
     except Exception as e:
-        logger.error(f"Error sending email to {_obfuscate_email(to_email)}: {e}")
+        logger.exception(f"Error sending email to {_obfuscate_email(to_email)}: {e}")
         return False
 
     # Increment quota and fire threshold alerts if needed.
