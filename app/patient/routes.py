@@ -286,7 +286,7 @@ async def _generate_and_send_pdf(form, doctor, questions, validated_answers: lis
         )
         pdf_filename = generate_pdf_filename(form.slug, datetime.now(LUX_TZ))
     except Exception as e:
-        logger.error(f"Error generating PDF for form id={form.id}: {e}")
+        logger.exception(f"Error generating PDF for form id={form.id}: {e}")
         return JSONResponse({"success": False, "error": "Erreur d'envoi. Si le problème persiste, contactez votre médecin."}, status_code=500)
 
     email_sent = await send_form_submission_email(
