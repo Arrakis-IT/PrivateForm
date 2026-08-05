@@ -976,9 +976,9 @@ sqlalchemy==2.0.48 \
     # via
     #   -r requirements.txt
     #   alembic
-starlette==0.52.1 \
-    --hash=sha256:0029d43eb3d273bc4f83a08720b4912ea4b071087a3b48db01b7c839f7954d74 \
-    --hash=sha256:834edd1b0a23167694292e94f597773bc3f89f362be6effee198165a35d62933
+starlette==1.4.0 \
+    --hash=sha256:cacd43738e07b834844e2c8e97b898b40089d74f2678234b0a3e93cd3d515813 \
+    --hash=sha256:ecf3a067176d63c6412f98c660dab3355b525584d3725c0c40a4519d33ec2130
     # via
     #   -r requirements.txt
     #   fastapi
