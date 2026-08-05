@@ -37,7 +37,7 @@ RUN pip install --no-cache-dir --only-binary :all: pip==26.2.1
 
 # Install pinned dependencies from lockfile (BuildKit cache avoids re-downloading on cache miss)
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --only-binary :all: -r requirements.lock
+    pip install --only-binary :all: --require-hashes -r requirements.lock
 
 # --- Stage 2: Final production image ---
 FROM python:3.12-slim
