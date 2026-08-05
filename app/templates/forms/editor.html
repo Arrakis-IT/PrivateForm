@@ -75,8 +75,9 @@
 
             <!-- Question text -->
             <div class="mb-3">
+                <label for="q{{ loop.index0 }}-text" class="block text-xs text-gray-500 mb-1">Texte de la question</label>
                 <textarea id="q{{ loop.index0 }}-text" class="q-text w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
-                          rows="2" maxlength="500" placeholder="Texte de la question" aria-label="Texte de la question"
+                          rows="2" maxlength="500" placeholder="Texte de la question"
                           >{{ q.text }}</textarea>
                 <div class="flex justify-between mt-1">
                     {% if question_errors[loop.index0] and 'text' in question_errors[loop.index0] %}
@@ -391,8 +392,9 @@ function addQuestion() {
             </div>
         </div>
         <div class="mb-3">
+            <label for="q${currentCount}-text" class="block text-xs text-gray-500 mb-1">Texte de la question</label>
             <textarea id="q${currentCount}-text" class="q-text w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
-                      rows="2" maxlength="500" aria-label="Texte de la question">${text}</textarea>
+                      rows="2" maxlength="500">${text}</textarea>
             <div class="flex justify-end mt-1"><span class="char-counter text-xs text-gray-400">${text.length}/500</span></div>
         </div>
         <div class="flex items-center gap-4 mb-3">

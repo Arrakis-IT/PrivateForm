@@ -159,19 +159,10 @@ done
 echo ""
 
 # ---------------------------------------------------------------
-# STEP 7: Generate poetry.lock and build
+# STEP 7: Docker build
 # ---------------------------------------------------------------
 echo "[STEP 7] Docker build..."
 cd "${DEPLOY_DIR}"
-
-# Generate poetry.lock if it doesn't exist
-if [[ ! -f "poetry.lock" ]]; then
-    echo "  → Generating poetry.lock..."
-    pip install poetry --quiet 2>/dev/null && poetry lock --no-update || {
-        echo "  ⚠ Couldn't generate poetry.lock with poetry."
-        echo "  → Docker build will handle it internally."
-    }
-fi
 
 docker compose -f docker-compose.yml build 2>&1
 echo "  ✓ Build completed."
