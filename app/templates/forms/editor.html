@@ -357,6 +357,15 @@ function showNewConditional() {
 // --------------------------------------------------------------------------
 // Add question to the list
 // --------------------------------------------------------------------------
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
 function addQuestion() {
     const text = document.getElementById("new-q-text").value.trim();
     if (!text) { showToast("Le texte de la question est obligatoire.", "error"); return; }
@@ -394,7 +403,7 @@ function addQuestion() {
         <div class="mb-3">
             <label for="q${currentCount}-text" class="block text-xs text-gray-500 mb-1">Texte de la question</label>
             <textarea id="q${currentCount}-text" class="q-text w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 resize-none"
-                      rows="2" maxlength="500">${text}</textarea>
+                      rows="2" maxlength="500">${escapeHtml(text)}</textarea>
             <div class="flex justify-end mt-1"><span class="char-counter text-xs text-gray-400">${text.length}/500</span></div>
         </div>
         <div class="flex items-center gap-4 mb-3">
@@ -421,15 +430,15 @@ function addQuestion() {
         </div>
         <div class="q-options-block" style="${(type==='select'||type==='multiselect')?'':'display:none;'}">
             <span class="block text-xs text-gray-500 mb-1">Options (une par ligne)</span>
-            <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" rows="3" aria-label="Options (une par ligne)">${document.getElementById('new-q-options').value}</textarea>
+            <textarea class="q-options w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" rows="3" aria-label="Options (une par ligne)">${escapeHtml(document.getElementById('new-q-options').value)}</textarea>
         </div>
         <div class="q-number-block" style="${type==='number'?'':'display:none;'}">
             <label class="flex items-center gap-2"><input type="checkbox" class="q-decimals" ${document.getElementById('new-q-decimals').checked?'checked':''}><span class="text-xs text-gray-500">Permettre les décimales</span></label>
         </div>
         <div class="q-scale-block" style="${type==='scale'?'':'display:none;'}">
             <div class="flex gap-4">
-                <div class="flex-1"><span class="block text-xs text-gray-500 mb-1">Étiquette pour 1 *</span><input type="text" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" aria-label="Étiquette pour 1" maxlength="30" value="${document.getElementById('new-scale-1').value}"></div>
-                <div class="flex-1"><span class="block text-xs text-gray-500 mb-1">Étiquette pour 10 *</span><input type="text" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" aria-label="Étiquette pour 10" maxlength="30" value="${document.getElementById('new-scale-10').value}"></div>
+                <div class="flex-1"><span class="block text-xs text-gray-500 mb-1">Étiquette pour 1 *</span><input type="text" class="q-scale-1 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" aria-label="Étiquette pour 1" maxlength="30" value="${escapeHtml(document.getElementById('new-scale-1').value)}"></div>
+                <div class="flex-1"><span class="block text-xs text-gray-500 mb-1">Étiquette pour 10 *</span><input type="text" class="q-scale-10 w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" aria-label="Étiquette pour 10" maxlength="30" value="${escapeHtml(document.getElementById('new-scale-10').value)}"></div>
             </div>
         </div>
     `;
