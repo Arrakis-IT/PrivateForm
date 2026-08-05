@@ -107,7 +107,7 @@
 
                     <!-- Toggle active/inactive -->
                     <button class="p-1.5" title="{{ 'Désactiver' if form.is_active else 'Activer' }}" data-action="toggle-form" data-id="{{ form.id }}" data-active="{{ 'true' if form.is_active else 'false' }}">
-                        <label class="toggle-switch" style="width:40px;height:22px;">
+                        <label class="toggle-switch" style="width:40px;height:22px;" aria-label="{{ 'Désactiver' if form.is_active else 'Activer' }}">
                             <input type="checkbox" {% if form.is_active %}checked{% endif %} disabled>
                             <span class="toggle-slider" style="height:22px;border-radius:11px;"></span>
                         </label>

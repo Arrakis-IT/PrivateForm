@@ -27,7 +27,7 @@ COPY migrations/ ./migrations/
 COPY app/ ./app/
 
 # Create logs directory
-RUN mkdir -p /app/logs && chmod 777 /app/logs
+RUN mkdir -p /app/logs && chmod 750 /app/logs
 
 # Expose port
 EXPOSE 8000
