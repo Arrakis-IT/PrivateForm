@@ -1,8 +1,10 @@
 # =============================================================================
 # PrivateForm - Docker Compose
 # =============================================================================
-# Services: app (FastAPI), db (PostgreSQL), nginx
+# Services: app (FastAPI), db (PostgreSQL)
 # Secrets: sensitive variables via Docker secrets
+# Reverse proxy: handled outside this project by a shared nginx on the "web"
+# external network.
 # =============================================================================
 
 services:
@@ -30,7 +32,7 @@ services:
       PDF_MASTER_KEY_FILE: /run/secrets/pdf_master_key
     volumes:
       - logs:/app/logs
-      - static_img:/app/app/static/img
+      - ./static_img:/app/app/static/img
     secrets:
       - db_password
       - jwt_secret
@@ -41,6 +43,7 @@ services:
       - pdf_master_key
     networks:
       - privateform_net
+      - web
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -76,40 +79,12 @@ services:
         max-size: "5m"
         max-file: "2"
 
-  # -------------------------------------------------------------------------
-  # Nginx - Proxy inverso
-  # -------------------------------------------------------------------------
-  nginx:
-    image: nginx:alpine
-    container_name: privateform_nginx
-    depends_on:
-      - app
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/privateform.conf:/etc/nginx/conf.d/privateform.conf:ro
-      - /etc/privateform/.htpasswd:/etc/nginx/.htpasswd:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /var/www/certbot:/var/www/certbot:ro
-      - static_img:/usr/share/nginx/html/static/img
-    networks:
-      - privateform_net
-    restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
 # -----------------------------------------------------------------------------
 # Volumes
 # -----------------------------------------------------------------------------
 volumes:
   pgdata:                    # PostgreSQL data (persistent)
   logs:                      # Application logs
-  static_img:                # Logo and favicons (user-uploaded, persistent across deploys)
 
 # -----------------------------------------------------------------------------
 # Networks
@@ -117,6 +92,8 @@ volumes:
 networks:
   privateform_net:
     driver: bridge
+  web:
+    external: true           # Shared reverse-proxy network, created on the host
 
 # -----------------------------------------------------------------------------
 # Secrets - Created from files from the server

@@ -145,23 +145,9 @@ fi
 echo ""
 
 # ---------------------------------------------------------------
-# STEP 6: Verify ports
+# STEP 6: Docker build
 # ---------------------------------------------------------------
-echo "[STEP 6] Verifying ports 80 and 443..."
-for port in 80 443; do
-    if ss -tlnp | grep -q ":${port} "; then
-        PROCESS=$(ss -tlnp | grep ":${port} " | awk '{print $NF}')
-        echo "  ⚠ Port ${port} in use by: ${PROCESS}"
-    else
-        echo "  ✓ Port ${port} free."
-    fi
-done
-echo ""
-
-# ---------------------------------------------------------------
-# STEP 7: Docker build
-# ---------------------------------------------------------------
-echo "[STEP 7] Docker build..."
+echo "[STEP 6] Docker build..."
 cd "${DEPLOY_DIR}"
 
 docker compose -f docker-compose.yml build 2>&1
@@ -169,9 +155,9 @@ echo "  ✓ Build completed."
 echo ""
 
 # ---------------------------------------------------------------
-# STEP 8: Deploy
+# STEP 7: Deploy
 # ---------------------------------------------------------------
-echo "[STEP 8] Starting containers..."
+echo "[STEP 7] Starting containers..."
 docker compose -f docker-compose.yml up -d
 echo ""
 
@@ -188,9 +174,9 @@ done
 echo ""
 
 # ---------------------------------------------------------------
-# STEP 9: Migration
+# STEP 8: Migration
 # ---------------------------------------------------------------
-echo "[STEP 9] Running Alembic migration..."
+echo "[STEP 8] Running Alembic migration..."
 docker compose -f docker-compose.yml exec app alembic upgrade head
 echo "  ✓ Migration completed."
 echo ""
@@ -209,8 +195,7 @@ echo "$SEPARATOR"
 echo ""
 echo "Next steps (if first time):"
 echo "  1. Verify APP_DOMAIN in .env matches your domain"
-echo "  2. Get SSL certificate with certbot (see DEPLOYMENT.md)"
-echo "  3. Uncomment HTTPS block in nginx/privateform.conf"
-echo "  4. docker compose restart nginx"
+echo "  2. Make sure the external 'web' network exists (docker network create web)"
+echo "  3. Point the shared host nginx to the privateform_app container on the 'web' network"
 echo "  5. Upload your real logo: cp /path/logo.png app/static/img/logo.png"
 echo "  6. If you want hCaptcha: create secrets and restart app"
