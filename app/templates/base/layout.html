@@ -362,7 +362,12 @@ function showShareModal(url, qrBase64, formName) {
     shareQRData = qrBase64;
     shareFormName = formName;
     document.getElementById("share-url").textContent = url;
-    document.getElementById("share-qr").innerHTML = `<img src="data:image/png;base64,${qrBase64}" alt="QR Code" style="width:300px;height:300px;">`;
+    const qrImg = document.createElement("img");
+    qrImg.src = `data:image/png;base64,${qrBase64}`;
+    qrImg.alt = "QR Code";
+    qrImg.style.width = "300px";
+    qrImg.style.height = "300px";
+    document.getElementById("share-qr").replaceChildren(qrImg);
     document.getElementById("copy-btn").textContent = "Copier l'URL";
     document.getElementById("share-modal").classList.add("active");
 }
