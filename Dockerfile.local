@@ -29,6 +29,11 @@ COPY app/ ./app/
 # Create logs directory
 RUN mkdir -p /app/logs && chmod 750 /app/logs
 
+# Create non-root user and set ownership
+RUN groupadd -r appuser && useradd -r -g appuser appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 # Expose port
 EXPOSE 8000
 
