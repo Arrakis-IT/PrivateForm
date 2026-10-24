@@ -33,7 +33,7 @@ WORKDIR /app
 COPY requirements.txt requirements.lock ./
 
 # Update pip itself before installing dependencies
-RUN pip install --no-cache-dir --only-binary :all: pip==26.2.1
+RUN pip install --no-cache-dir --only-binary :all: pip==26.2.2
 
 # Install pinned dependencies from lockfile (BuildKit cache avoids re-downloading on cache miss)
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -47,7 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir --only-binary :all: pip==26.2.1
+    && pip install --no-cache-dir --only-binary :all: pip==26.2.2
 
 # Copy installed dependencies from builder
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages

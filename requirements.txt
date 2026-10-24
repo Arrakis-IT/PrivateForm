@@ -20,4 +20,5 @@ qrcode[pil]>=8.0.0,<9.0.0
 Pillow>=13.0.0,<14.0.0
 python-dotenv>=1.0.0,<2.0.0
 httpx>=0.28.0,<1.0.0
+# eMudhra/emSign CA compromise: emSign ECC Root CA - G3 intermediates (certifi >= 2026.10.19)
 certifi>=2026.10.19
